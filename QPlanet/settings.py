@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
 	'user',
+	'questionnaire',
 	'corsheaders',
 	'captcha',
     'django.contrib.admin',
