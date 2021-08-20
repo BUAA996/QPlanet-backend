@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import yaml
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,12 +27,14 @@ SECRET_KEY = 'django-insecure-3t(*=gr(lrks*91*%ddg#ef$)@*)$a7m)2^%mrgjhvn3^2+%v&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+	'corsheaders',
+	'captcha',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -48,6 +52,37 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+CORS_ORIGIN_ALLOW_ALL = True   # 允许所有源访问
+CORS_ORIGIN_WHITELIST = (
+    'http://127.0.0.1:8000',    #设置白名单
+    'http://localhost:8000',
+)
+
+CORS_ALLOW_METHODS = (
+    'DELETE',                 #允许的方法
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'VIEW',
+)
+
+CORS_ALLOW_HEADERS = (
+    'XMLHttpRequest',
+    'X_FILENAME',
+    'accept-encoding',
+    'authorization',          #允许的请求头
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'Pragma',
+)
 
 ROOT_URLCONF = 'QPlanet.urls'
 
@@ -73,10 +108,17 @@ WSGI_APPLICATION = 'QPlanet.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+YAMLFILE = open("config.yaml", "r")
+YAMLINFO = yaml.load(YAMLFILE.read(), Loader=yaml.FullLoader)
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': YAMLINFO['dbname'],
+		'HOST': YAMLINFO['dbhost'],
+		'USER': YAMLINFO['dbuser'],
+		'PASSWORD': YAMLINFO['dbpassword'],
+		'PORT': '3306'
     }
 }
 
@@ -105,7 +147,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -119,7 +161,18 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+APPEND_SLASH = True
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Email settings
+EMAIL_HOST = "smtp.163.com"						# 服务器
+EMAIL_USE_SSL = True							# 服务器端设置
+EMAIL_PORT = 465								# 本地为25,服务器为465
+EMAIL_HOST_USER = YAMLINFO['emailuser']			# 账号
+EMAIL_HOST_PASSWORD = YAMLINFO['emailpassword']	# 密码 (注意：这里的密码指的是授权码)
+EMAIL_USE_TLS = False							# 一般都为False
+EMAIL_FROM = YAMLINFO['emailuser']				# 邮箱来自
