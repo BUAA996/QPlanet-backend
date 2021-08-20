@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+	'user',
 	'corsheaders',
 	'captcha',
     'django.contrib.admin',
