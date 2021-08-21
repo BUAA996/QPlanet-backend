@@ -21,10 +21,10 @@ def send_code_email(email):
 	NewCode.code = code
 	NewCode.save()
 
-	email_title = "小型二手货交易平台注册激活验证码"
-	email_body = "欢迎您注册小型二手货交易平台!\n"
+	email_title = "问卷星球注册激活验证码"
+	email_body = "欢迎您注册问卷星球!\n"
 	email_body += "您的邮箱注册验证码为：{0}, 该验证码有效时间为两分钟，请及时进行验证.\n".format(code)
-	email_body += "如果您从未注册过榛果交易平台,请忽略该邮件."
+	email_body += "如果您从未注册过问卷星球,请忽略该邮件."
 
 	send_status = send_mail(email_title, email_body, settings.EMAIL_FROM, [email])
 	return send_status
@@ -35,9 +35,9 @@ def SendPasswordCodeEmail(email):
 	NewCode.code = code
 	NewCode.save()
 
-	email_title = "小型二手货交易平台密码重置验证码"
+	email_title = "问卷星球密码重置验证码"
 	email_body = "您的密码重置验证码为：{0}, 该验证码有效时间为两分钟，请及时修改密码.\n".format(code)
-	email_body += "如果您从未注册过小型二手货交易平台,请忽略该邮件."
+	email_body += "如果您从未注册过问卷星球,请忽略该邮件."
 
 	send_status = send_mail(email_title, email_body, settings.EMAIL_FROM, [email])
 	return send_status
