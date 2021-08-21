@@ -78,6 +78,13 @@ def logout(request):
 		return JsonResponse({'result': ACCEPT, 'message': r'登出成功!'})
 
 @csrf_exempt
+def is_login(request):
+	if request.session.get('is_login', 0) != True:
+		return JsonResponse({'result': ERROR})
+	else:
+		return JsonResponse({'result': ACCEPT})
+
+@csrf_exempt
 def send_code(request):
 	if request.method == 'POST':
 		if request.session.get('is_login') == True:
