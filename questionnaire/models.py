@@ -21,5 +21,8 @@ class Info(models.Model):
 	status = models.IntegerField()
 	upload_time = models.CharField(max_length = 50)
 
+class Img(models.Model):
+	img = models.ImageField(blank = True)
+
 class Paper(models.Model):
 	id = models.IntegerField(primary_key = True)

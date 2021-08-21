@@ -5,6 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Max
 from django.utils import timezone
 from QPlanet.values import *
+from QPlanet.settings import *
+import qrcode
 import json
 import datetime
 import random
@@ -117,3 +119,41 @@ def recover(request):
 		q.status = SAVED
 		q.save()
 		return JsonResponse({'result': ACCEPT, 'message':r'已恢复!'})
+
+@csrf_exempt
+def release(request):
+	pass
+	'''
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		id = int(data_json['id'])
+
+		info = Info.objects.get(id = id)
+		info.status = RELEASE
+		info.upload_time = datetime.datetime.now()
+		info.save()
+
+		_hash = hash(id)
+		url = IMG_URL + _hash
+		pic=qrcode.make(url)
+		with open("img/"+_hash +".png","wb") as f:
+			pic.save(f)
+		image = Img(img = pic)
+		image.save()
+
+		return JsonResponse({'result': ACCEPT, 'message':r'发布成功!', 'url':url, 'img':image.img.url})
+
+	'''
+	
+@csrf_exempt
+def close(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		id = int(data_json['id'])
+
+		info = Info.objects.get(id = id)
+		info.status = SAVED
+		info.upload_time = ""
+		info.save()
+
+		return JsonResponse({'result': ACCEPT, 'message':r'已停止发布!'})

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 import os
 import yaml
+import platform
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -179,3 +180,8 @@ EMAIL_HOST_USER = YAMLINFO['emailuser']			# 账号
 EMAIL_HOST_PASSWORD = YAMLINFO['emailpassword']	# 密码 (注意：这里的密码指的是授权码)
 EMAIL_USE_TLS = False							# 一般都为False
 EMAIL_FROM = YAMLINFO['emailuser']				# 邮箱来自
+
+if platform.system() == "Windows":
+	IMG_URL = "127.0.0.1:8000/"
+else:
+	IMG_URL = "123.57.194.168:8000/"
