@@ -12,6 +12,7 @@ import datetime
 import random
 import string
 from django import utils
+from django.db.models import Q
 # Create your views here.
 
 @csrf_exempt
@@ -164,14 +165,11 @@ def get_sorted_questionnaires(request):
 	if request.method == 'POST':
 		if request.session.get('is_login') == False:
 			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
-		
 		username = request.session.get('user')
 		l = [x for x in Questionnaire.objects.filter(own = username)]
-    	
 		data_json = json.loads(request.body)
 		sort_method = data_json['sort_method']
 		res_tmp=[]
-
 		if sort_method == 'create_time_ascend': # 创建时间升序
 			l.sort(key = lambda x: x.id)
 			for x in l:
@@ -246,3 +244,32 @@ def get_sorted_questionnaires(request):
 						'create_time':x.create_time, 'upload_time':info.upload_time}
 					res_tmp.append(d)
 				return JsonResponse({'result': ACCEPT, 'message': res_tmp})
+
+@csrf_exempt
+def search_questionnaires(request):
+	if request.method == 'POST':
+		if request.session.get('is_login') == False:
+			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
+		
+		username = request.session.get('user')
+		data_json = json.loads(request.body)
+		
+		q = data_json['query']
+
+		res_tmp=[]
+
+		if not q.isdigit(): # 不含数字，查标题
+			l = [x for x in Questionnaire.objects.filter(Q(own = username) & Q(title = q))]
+		else: # 仅数字
+			l = [x for x in Questionnaire.objects.filter(Q(own = username) & Q(title = q))]
+			l.extend([x for x in Questionnaire.objects.filter(Q(own = username) & Q(id = int(q)))])
+		l.sort(key = lambda x: x.id)
+		for x in l:
+			info = Info.objects.get(id = x.id)
+			if info.status == DELETED:
+				continue
+			d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
+				'count':x.count, 'hash':x.hash, 'status':info.status,
+				'create_time':x.create_time, 'upload_time':info.upload_time}
+			res_tmp.append(d)
+		return JsonResponse({'result': ACCEPT, 'message': res_tmp})

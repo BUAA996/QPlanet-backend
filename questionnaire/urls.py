@@ -10,4 +10,5 @@ urlpatterns = [
 	path('release', release),
 	path('close', close),
 	path('sorted', get_sorted_questionnaires),
+	path('search', search_questionnaires),
 ]
