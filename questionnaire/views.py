@@ -3,6 +3,7 @@ from django.shortcuts import render
 from questionnaire.models import *
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Max
+from django.utils import timezone
 from QPlanet.values import *
 import json
 import datetime
@@ -37,12 +38,14 @@ def create(request):
 		
 		questionnaire = Questionnaire(
 			id=total, title=title, description=description, type=type, own = username,
-			 validity = validity, limit_time=limit_time, create_time = str(datetime.datetime.now()),
-			upload_time = "", count = 0, status = SAVED, hash = ""
+			validity = validity, limit_time=limit_time, create_time = str(datetime.datetime.now()),
+			count = 0, hash = ""
 		)
-
 		questionnaire.save()
-		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'qid':total})
+		
+		info = Info(id = total, status = SAVED, upload_time = "")
+		info.save()
+		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id':total})
 
 @csrf_exempt
 def list(request):
@@ -56,13 +59,14 @@ def list(request):
 		l.reverse()
 		result = {'result': ACCEPT, 'message': r'获取成功!', 'questionnaires':[]}
 		for x in l:
-			if x.status == DELETED:
+			info = Info.objects.get(id = x.id)
+			if info.status == DELETED:
 				continue
 			d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-				'create_time':x.create_time, 'count':x.count, 'hash':x.hash}
+				'count':x.count, 'hash':x.hash, 'status':info.status,
+				'create_time':x.create_time, 'upload_time':info.upload_time}
 			result['questionnaires'].append(d)
 		return JsonResponse(result)
-
 
 
 def hash(id):
@@ -91,7 +95,7 @@ def delete(request):
 		
 		data_json = json.loads(request.body)
 		id = int(data_json['id'])
-		q = Questionnaire.objects.get(id = id)
+		q = Info.objects.get(id = id)
 		if q.status == DELETED:
 			# TODO : clear the information about this questionnaire
 			q.delete()
@@ -109,7 +113,7 @@ def recover(request):
 		
 		data_json = json.loads(request.body)
 		id = int(data_json['id'])
-		q = Questionnaire.objects.get(id = id)
+		q = Info.objects.get(id = id)
 		q.status = SAVED
 		q.save()
 		return JsonResponse({'result': ACCEPT, 'message':r'已恢复!'})
