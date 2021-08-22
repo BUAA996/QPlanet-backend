@@ -6,7 +6,6 @@ from captcha.helpers import captcha_image_url
 from result.models import *
 from QPlanet.values import *
 import datetime
-from datetime import datetime
 import json
 # Create your views here.
 
@@ -16,7 +15,7 @@ def submit(request):
 		data_json = json.loads(request.body)
 		qid = data_json['qid']
 		results = data_json['results']
-		total = Submit.objects.all().aggregate(Max('id'))
+		total = SubmitInfo.objects.all().aggregate(Max('id'))
 		if total['id__max'] == None:
 			total = 0
 		else:
@@ -25,7 +24,7 @@ def submit(request):
 		submitinfo = SubmitInfo(id = total, qid = qid, submit_time = str(datetime.datetime.now()))
 		submitinfo.save()
 		for i in results:
-			submit = Submit(id = total, problem_id = i['problem_id'], type = i['type'], answer = i['answer'])
+			submit = Submit(sid = total, problem_id = i['problem_id'], type = i['type'], answer = i['answer'])
 			submit.save()
 		
 		return JsonResponse({'result': ACCEPT, 'message': r'提交成功!'})

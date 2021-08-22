@@ -9,7 +9,7 @@ class SubmitInfo(models.Model):
 	author = models.CharField(max_length = 50, null=True, blank=True)
 
 class Submit(models.Model):
-	id = models.IntegerField(primary_key = True)
+	sid = models.IntegerField()
 	problem_id = models.IntegerField()
 	type = models.IntegerField()
 	answer = models.TextField(null=True, blank=True)
