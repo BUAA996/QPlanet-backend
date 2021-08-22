@@ -10,7 +10,6 @@ from question.views import *
 import qrcode
 import json
 import datetime
-from datetime import datetime
 import random
 import string
 from django import utils
@@ -69,11 +68,11 @@ def list(request):
 				'count':x.count, 'hash':x.hash, 'status':info.status,
 				'create_time':x.create_time[:16], 'upload_time':info.upload_time, 
 			}
-			dt_time = datetime.strptime(x.create_time[:19], '%Y-%m-%d %H:%M:%S')
+			dt_time = datetime.datetime.strptime(x.create_time[:19], '%Y-%m-%d %H:%M:%S')
 			d['create_time_int'] = int(dt_time.timestamp())
 			d['upload_time_int'] = 0
 			if info.upload_time != "":
-				dt_time = datetime.strptime(info.upload_time[:19], '%Y-%m-%d %H:%M:%S')
+				dt_time = datetime.datetime.strptime(info.upload_time[:19], '%Y-%m-%d %H:%M:%S')
 				d['upload_time_int'] = int(dt_time.timestamp())
 			result['questionnaires'].append(d)
 		return JsonResponse(result)

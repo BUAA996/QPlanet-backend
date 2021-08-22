@@ -5,6 +5,7 @@ from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
 from result.models import *
 from QPlanet.values import *
+from question.models import *
 import datetime
 import json
 # Create your views here.
@@ -34,6 +35,19 @@ def analyze(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
 		qid = int(data_json['qid'])
+		result = {'qid':qid}
+		infos = [x for x in SubmitInfo.objects.filter(qid = qid)]
+		result['total'] = len(infos)
+		result['questions'] = []
+		questions = [x for x in Question.objects.filter(questionnaire_id = qid)]
+		questions.sort(lambda x : x.rank)
+		for i in range(len(questions)):
+			result['questions'].append({'type': questions[i].type})
+			
+		# Put basic question informations
+
+
+		# Some calculations
 		'''
 		{
 			qid:
