@@ -18,7 +18,7 @@ def save_questions(questions, qid):
         for x in questions:
             question = Question(
                 questionnaire_id = qid, rank = num, type = x['type'], content = x['content'], 
-                is_required = x['is_required']
+                is_required = x['is_required'], description = x['description']
             )
             if x['type'] == SINGLE_CHOICE or x['type'] == MULTIPLE_CHOICE:
                 question.option = list_to_string(x['option'])
@@ -35,8 +35,9 @@ def get_questions(qid):
     for x in questions:
         if x['type'] == SINGLE_CHOICE or x['type'] == MULTIPLE_CHOICE:
             d = {'id':x.id, 'type':x.type, 'content':x.content, 'option':string_to_list(x.option),
-                'is_required':x.is_required }
+                'is_required':x.is_required, 'description':x.description }
         else:
-            d = {'id':x.id, 'type':x.type, 'content':x.content, 'is_required':x.is_required }
+            d = {'id':x.id, 'type':x.type, 'content':x.content, 'is_required':x.is_required,
+                'description':x.description }
         tmp.append(d)
     return tmp
