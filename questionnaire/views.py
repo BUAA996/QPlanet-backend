@@ -109,6 +109,7 @@ def delete(request):
 		if q.status == DELETED:
 			questionnaire = Questionnaire.objects.get(id = q.id)
 			# TODO : clear the information about this questionnaire
+			delete_question(id)
 			questionnaire.delete()
 			q.delete()
 			return JsonResponse({'result': ACCEPT, 'message':r'已彻底删除该问卷!'})
