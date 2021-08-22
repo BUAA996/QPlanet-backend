@@ -35,6 +35,8 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
 	'user',
+	'question',
+	'result',
 	'questionnaire',
 	'corsheaders',
 	'captcha',

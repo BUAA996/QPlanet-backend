@@ -6,6 +6,7 @@ from django.db.models import Max
 from django.utils import timezone
 from QPlanet.values import *
 from QPlanet.settings import *
+from question.views import *
 import qrcode
 import json
 import datetime
