@@ -18,7 +18,7 @@ from django.db.models import Q
 @csrf_exempt
 def create(request):
 	if request.method == 'POST':
-		if request.session.get('is_login') == False:
+		if request.session.get('is_login') != True:
 			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
 
 		data_json = json.loads(request.body)
@@ -54,7 +54,7 @@ def create(request):
 @csrf_exempt
 def list(request):
 	if request.method == 'POST':
-		if request.session.get('is_login') == False:
+		if request.session.get('is_login') != True:
 			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
 		
 		username = request.session.get('user')
@@ -82,7 +82,7 @@ def hash(id):
 @csrf_exempt
 def reset_hash(request):
 	if request.method == 'POST':
-		if request.session.get('is_login') == False:
+		if request.session.get('is_login') != True:
 			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
 		
 		data_json = json.loads(request.body)
@@ -94,7 +94,7 @@ def reset_hash(request):
 @csrf_exempt
 def delete(request):
 	if request.method == 'POST':
-		if request.session.get('is_login') == False:
+		if request.session.get('is_login') != True:
 			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
 		
 		data_json = json.loads(request.body)
@@ -112,7 +112,7 @@ def delete(request):
 @csrf_exempt
 def recover(request):
 	if request.method == 'POST':
-		if request.session.get('is_login') == False:
+		if request.session.get('is_login') != True:
 			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
 		
 		data_json = json.loads(request.body)
@@ -163,7 +163,7 @@ def close(request):
 @csrf_exempt
 def get_sorted_questionnaires(request):
 	if request.method == 'POST':
-		if request.session.get('is_login') == False:
+		if request.session.get('is_login') != True:
 			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
 		username = request.session.get('user')
 		l = [x for x in Questionnaire.objects.filter(own = username)]
@@ -248,7 +248,7 @@ def get_sorted_questionnaires(request):
 @csrf_exempt
 def search_questionnaires(request):
 	if request.method == 'POST':
-		if request.session.get('is_login') == False:
+		if request.session.get('is_login') != True:
 			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
 		
 		username = request.session.get('user')
