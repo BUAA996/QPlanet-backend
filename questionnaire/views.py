@@ -61,6 +61,7 @@ def list(request):
 		l = [x for x in Questionnaire.objects.filter(own = username)]
 		l.sort(key = lambda x: x.id)
 		l.reverse()
+		print(len(l))
 		result = {'result': ACCEPT, 'message': r'获取成功!', 'questionnaires':[]}
 		for x in l:
 			info = Info.objects.get(id = x.id)
@@ -106,7 +107,9 @@ def delete(request):
 		id = int(data_json['id'])
 		q = Info.objects.get(id = id)
 		if q.status == DELETED:
+			questionnaire = Questionnaire.objects.get(id = q.id)
 			# TODO : clear the information about this questionnaire
+			questionnaire.delete()
 			q.delete()
 			return JsonResponse({'result': ACCEPT, 'message':r'已彻底删除该问卷!'})
 		else:
