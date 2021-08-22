@@ -1,3 +1,4 @@
+from result.views import delete_result
 from django.http import JsonResponse
 from django.shortcuts import render
 from questionnaire.models import *
@@ -318,10 +319,11 @@ def modify_questionnaire(request):
 		if modify_type == 'reserve_results':	
 			for x in questions:
 				update_question(x['id'], x['content'], x['is_required'], x['description'], x['option'])
-		# 方式二：删除所有答卷（把原来的题目删掉重写）
+		# 方式二：删除所有答卷（题目删掉重写）
 		elif modify_type == 'delete_all_results':
 			delete_question(qid)
 			save_questions(questions, qid)
+			delete_result(qid)
 		return JsonResponse({'result': ACCEPT})
 
 @csrf_exempt
