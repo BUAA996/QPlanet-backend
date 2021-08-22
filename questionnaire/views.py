@@ -9,6 +9,7 @@ from QPlanet.settings import *
 import qrcode
 import json
 import datetime
+from datetime import datetime
 import random
 import string
 from django import utils
@@ -64,11 +65,16 @@ def list(request):
 		result = {'result': ACCEPT, 'message': r'获取成功!', 'questionnaires':[]}
 		for x in l:
 			info = Info.objects.get(id = x.id)
-			if info.status == DELETED:
-				continue
 			d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
 				'count':x.count, 'hash':x.hash, 'status':info.status,
-				'create_time':x.create_time[:16], 'upload_time':info.upload_time}
+				'create_time':x.create_time[:16], 'upload_time':info.upload_time, 
+			}
+			dt_time = datetime.strptime(x.create_time[:19], '%Y-%m-%d %H:%M:%S')
+			d['create_time_int'] = int(dt_time.timestamp())
+			d['upload_time_int'] = 0
+			if info.upload_time != "":
+				dt_time = datetime.strptime(info.upload_time[:19], '%Y-%m-%d %H:%M:%S')
+				d['upload_time_int'] = int(dt_time.timestamp())
 			result['questionnaires'].append(d)
 		return JsonResponse(result)
 
