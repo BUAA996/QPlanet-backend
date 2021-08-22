@@ -26,7 +26,6 @@ def draw_wordcloud(s):
 	w = wordcloud.WordCloud(width=1000,
                         height=700,
                         background_color='white',
-                        font_path='msyh.ttc',
 						stopwords=STOPWORDS)
 	txtlist = jieba.lcut(s)
 	ss = " ".join(txtlist)

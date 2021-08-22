@@ -41,7 +41,7 @@ def create(request):
 		questionnaire = Questionnaire(
 			id = total, title = title, description = description, type = type, own = username,
 			validity = validity, limit_time = limit_time, create_time = str(datetime.datetime.now()),
-			count = 0, hash = ""
+			count = 0, hash = hash(id)
 		)
 		questionnaire.save()
 
@@ -49,7 +49,7 @@ def create(request):
 
 		info = Info(id = total, status = SAVED, upload_time = "")
 		info.save()
-		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id':total})
+		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id':total, 'hash':questionnaire.hash})
 
 @csrf_exempt
 def list(request):
