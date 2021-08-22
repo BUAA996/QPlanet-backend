@@ -68,7 +68,7 @@ def list(request):
 				continue
 			d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
 				'count':x.count, 'hash':x.hash, 'status':info.status,
-				'create_time':x.create_time, 'upload_time':info.upload_time}
+				'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 			result['questionnaires'].append(d)
 		return JsonResponse(result)
 
@@ -178,7 +178,7 @@ def get_sorted_questionnaires(request):
 					continue
 				d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
 					'count':x.count, 'hash':x.hash, 'status':info.status,
-					'create_time':x.create_time, 'upload_time':info.upload_time}
+					'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 				res_tmp.append(d)
 			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 		elif sort_method == 'create_time_descend': # 创建时间降序
@@ -189,7 +189,7 @@ def get_sorted_questionnaires(request):
 					continue
 				d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
 					'count':x.count, 'hash':x.hash, 'status':info.status,
-					'create_time':x.create_time, 'upload_time':info.upload_time}
+					'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 				res_tmp.append(d)
 			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 		elif sort_method == 'upload_time_ascend': # 发布时间升序
@@ -204,7 +204,7 @@ def get_sorted_questionnaires(request):
 					continue
 				d = {'id':x.id, 'title':questionnaire.title, 'description':questionnaire.description, 
 					'type':questionnaire.type, 'count':questionnaire.count, 'hash':questionnaire.hash, 
-					'status':x.status, 'create_time':questionnaire.create_time, 'upload_time':x.upload_time}
+					'status':x.status, 'create_time':questionnaire.create_time[:16], 'upload_time':x.upload_time}
 				res_tmp.append(d)
 			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 		elif sort_method == 'upload_time_descend': # 发布时间降序
@@ -219,7 +219,7 @@ def get_sorted_questionnaires(request):
 					continue
 				d = {'id':x.id, 'title':questionnaire.title, 'description':questionnaire.description, 
 					'type':questionnaire.type, 'count':questionnaire.count, 'hash':questionnaire.hash, 
-					'status':x.status, 'create_time':questionnaire.create_time, 'upload_time':x.upload_time}
+					'status':x.status, 'create_time':questionnaire.create_time[:16], 'upload_time':x.upload_time}
 				res_tmp.append(d)
 			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 		elif sort_method == 'count_ascend': # 回收量升序
@@ -230,7 +230,7 @@ def get_sorted_questionnaires(request):
 					continue
 				d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
 					'count':x.count, 'hash':x.hash, 'status':info.status,
-					'create_time':x.create_time, 'upload_time':info.upload_time}
+					'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 				res_tmp.append(d)
 			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 		elif sort_method == 'count_descend': # 回收量降序
@@ -241,7 +241,7 @@ def get_sorted_questionnaires(request):
 						continue
 					d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
 						'count':x.count, 'hash':x.hash, 'status':info.status,
-						'create_time':x.create_time, 'upload_time':info.upload_time}
+						'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 					res_tmp.append(d)
 				return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 
@@ -270,6 +270,6 @@ def search_questionnaires(request):
 				continue
 			d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
 				'count':x.count, 'hash':x.hash, 'status':info.status,
-				'create_time':x.create_time, 'upload_time':info.upload_time}
+				'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 			res_tmp.append(d)
 		return JsonResponse({'result': ACCEPT, 'message': res_tmp})
