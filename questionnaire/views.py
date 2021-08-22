@@ -41,8 +41,10 @@ def create(request):
 		questionnaire = Questionnaire(
 			id = total, title = title, description = description, type = type, own = username,
 			validity = validity, limit_time = limit_time, create_time = str(datetime.datetime.now()),
-			count = 0, hash = hash(id)
+			count = 0, hash = ""
 		)
+		questionnaire.save()
+		questionnaire.hash = hash(total)
 		questionnaire.save()
 
 		save_questions(questions, questionnaire.id)
@@ -75,6 +77,7 @@ def list(request):
 			if info.upload_time != "":
 				dt_time = datetime.datetime.strptime(info.upload_time[:19], '%Y-%m-%d %H:%M:%S')
 				d['upload_time_int'] = int(dt_time.timestamp())
+				d['upload_time'] = d['upload_time'][:16]
 			result['questionnaires'].append(d)
 		return JsonResponse(result)
 
@@ -133,15 +136,13 @@ def recover(request):
 
 @csrf_exempt
 def release(request):
-	pass
-	'''
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
 		id = int(data_json['id'])
 
 		info = Info.objects.get(id = id)
 		info.status = RELEASE
-		info.upload_time = datetime.datetime.now()
+		info.upload_time = str(datetime.datetime.now())
 		info.save()
 
 		_hash = hash(id)
@@ -149,12 +150,7 @@ def release(request):
 		pic=qrcode.make(url)
 		with open("img/"+_hash +".png","wb") as f:
 			pic.save(f)
-		image = Img(img = pic)
-		image.save()
-
-		return JsonResponse({'result': ACCEPT, 'message':r'发布成功!', 'url':url, 'img':image.img.url})
-
-	'''
+		return JsonResponse({'result': ACCEPT, 'message':r'发布成功!', 'url':url, 'img':IMG_URL + 'img/' + _hash + '.png'})
 	
 @csrf_exempt
 def close(request):

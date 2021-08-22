@@ -179,7 +179,7 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
-os.path.join(BASE_DIR,'img').replace('\\', '/')
+MEDIA_ROOT = os.path.join(BASE_DIR,'img').replace('\\', '/')
 
 APPEND_SLASH = True
 
