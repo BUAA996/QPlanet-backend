@@ -254,7 +254,7 @@ def get_sorted_questionnaires(request):
 
 @csrf_exempt
 def search_questionnaires(request):
-	if request.method == 'GET':
+	if request.method == 'POST':
 		if request.session.get('is_login') != True:
 			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
 		
