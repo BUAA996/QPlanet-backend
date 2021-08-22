@@ -16,6 +16,28 @@ from django import utils
 from django.db.models import Q
 # Create your views here.
 
+def build_questionnaire(title, description, type, limit_time, validity, username, questions):
+	total = Questionnaire.objects.all().aggregate(Max('id'))
+	if total['id__max'] == None:
+		total = 1
+	else:
+		total = int(total['id__max']) + 1
+		
+	questionnaire = Questionnaire(
+		id = total, title = title, description = description, type = type, own = username,
+		validity = validity, limit_time = limit_time, create_time = str(datetime.datetime.now()),
+		count = 0, hash = ""
+	)
+	questionnaire.save()
+	questionnaire.hash = hash(total)
+	questionnaire.save()
+
+	save_questions(questions, questionnaire.id)
+
+	info = Info(id = total, status = SAVED, upload_time = "")
+	info.save()
+	return questionnaire.id, questionnaire.hash
+
 @csrf_exempt
 def create(request):
 	if request.method == 'POST':
@@ -23,35 +45,12 @@ def create(request):
 			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
 
 		data_json = json.loads(request.body)
-		title = data_json['title']
-		description = data_json['description']
-		type = int(data_json['type'])
-		limit_time = int(data_json['limit_time'])
-		# TODO load time
-		validity = datetime.datetime.now()
 		username = request.session.get('user')
-		questions =  data_json['questions']
-
-		total = Questionnaire.objects.all().aggregate(Max('id'))
-		if total['id__max'] == None:
-			total = 1
-		else:
-			total = int(total['id__max']) + 1
 		
-		questionnaire = Questionnaire(
-			id = total, title = title, description = description, type = type, own = username,
-			validity = validity, limit_time = limit_time, create_time = str(datetime.datetime.now()),
-			count = 0, hash = ""
-		)
-		questionnaire.save()
-		questionnaire.hash = hash(total)
-		questionnaire.save()
-
-		save_questions(questions, questionnaire.id)
-
-		info = Info(id = total, status = SAVED, upload_time = "")
-		info.save()
-		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id':total, 'hash':questionnaire.hash})
+		# TODO load time
+		res = build_questionnaire(data_json['title'], data_json['description'], int(data_json['type']), 
+			int(data_json['limit_time']), datetime.datetime.now(), username, data_json['questions'])
+		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': res[0], 'hash': res[1]})
 
 @csrf_exempt
 def list(request):
