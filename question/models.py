@@ -3,11 +3,11 @@ from django.db import models
 # Create your models here.
 
 class Question(models.Model):
-	id = models.IntegerField(primary_key = True)
-	qid = models.IntegerField()
+	id = models.AutoField(primary_key = True)
+	questionaire_id = models.IntegerField()
 	rank = models.IntegerField()
 	username  = models.CharField(max_length = 50)
 	type = models.IntegerField()
-	title = models.TextField()
-	must = models.IntegerField()
-	choise = models.TextField()
+	content = models.TextField()
+	is_required = models.BooleanField(default = False)
+	option = models.TextField(null = True, blank = True)
