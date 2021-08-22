@@ -298,3 +298,13 @@ def view(request):
 		result['result'] = ACCEPT
 		result['message'] = r'获取成功!'
 		return JsonResponse(result)
+
+@csrf_exempt
+def modify_questionnaire(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+
+@csrf_exempt
+def copy_questionnaire(request):
+	if request.method == 'GET':
+		data_json = json.loads(request.body)

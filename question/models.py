@@ -9,4 +9,5 @@ class Question(models.Model):
 	type = models.IntegerField()
 	content = models.TextField()
 	is_required = models.BooleanField(default = False)
+	description = models.TextField(null = True, blank = True)
 	option = models.TextField(null = True, blank = True)
