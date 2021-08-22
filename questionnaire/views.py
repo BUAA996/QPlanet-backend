@@ -293,14 +293,7 @@ def view(request):
 			hash = data_json['hash']
 			q = Questionnaire.objects.get(hash = hash)
 		result = {'qid':q.id, 'title':q.title, 'description':q.description, 'type':q.type}
-		questions = [x for x in Question.objects.filter(questionnaire_id = q.id)]
-		questions.sort(key=lambda x: x.rank)
-		
-		result['questions'] = []
-		for x in questions:
-			d = {'id':x.id, 'type':x.type, 'content':x.content, 'option':x.option,
-				'is_required':x.is_required }
-			result['questions'].append(d)
+		result['questions'] = get_questions(q.id)
 		result['result'] = ACCEPT
 		result['message'] = r'获取成功!'
 		return JsonResponse(result)
