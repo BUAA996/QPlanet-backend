@@ -6,6 +6,11 @@
 dist
 build
 *.pyc
+*.png
+*.jpg
+*.jpeg
+/img/*
+/img
 /.vscode/*
 /.idea/*
 user/migrations

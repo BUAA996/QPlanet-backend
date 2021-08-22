@@ -7,6 +7,7 @@ from result.models import *
 from QPlanet.values import *
 from question.models import *
 from question.views import *
+from .wordclound import *
 import datetime
 import json
 # Create your views here.
@@ -57,8 +58,13 @@ def analyze(request):
 
 		for i in range(len(questions)):
 			if questions[i].type not in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
-				continue
-				# TODO text analyze
+				answers = [x.answer for x in Submit.objects.filter(problem_id = questions[i].id)]
+				s = " ".join(answers)
+				print(s)
+				result['questions'][i]['url'] = draw_wordcloud(s)
+				a,b = word_count(s)
+				result['questions'][i]['words'] = a
+				result['questions'][i]['count'] = b
 			else:
 				print(questions[i].id)
 				all = [x for x in Submit.objects.filter(problem_id = questions[i].id)]

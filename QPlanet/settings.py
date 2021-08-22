@@ -14,6 +14,8 @@ from pathlib import Path
 import os
 import yaml
 import platform
+import jieba
+import wordcloud
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -177,6 +179,8 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
+os.path.join(BASE_DIR,'img').replace('\\', '/')
+
 APPEND_SLASH = True
 
 # Default primary key field type
@@ -197,3 +201,7 @@ if platform.system() == "Windows":
 	IMG_URL = "127.0.0.1:8000/"
 else:
 	IMG_URL = "123.57.194.168:8000/"
+
+__stopwords = set()
+STOPWORDS = [line.strip() for line in open('stop.txt','r', encoding='utf-8').readlines()]
+__stopwords.update(STOPWORDS)
