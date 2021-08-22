@@ -41,3 +41,12 @@ def get_questions(qid):
                 'description':x.description }
         tmp.append(d)
     return tmp
+
+def update_question(id, content, is_required, description, option):
+    question = Question.objects.get(id = id)
+    question.content= content
+    question.is_required = is_required
+    question.description = description
+    if type == SINGLE_CHOICE or type == MULTIPLE_CHOICE:
+        question.option = list_to_string(option)
+    question.save()
