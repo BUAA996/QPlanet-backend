@@ -8,4 +8,7 @@ build
 *.pyc
 /.vscode/*
 /.idea/*
-+migrations
+user/migrations
+question/migrations
+questionnaire/migrations
+result/migrations

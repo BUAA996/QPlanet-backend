@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from questionnaire.models import *
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Max
+from django.db.models import Max, query_utils
 from django.utils import timezone
 from QPlanet.values import *
 from QPlanet.settings import *
@@ -279,3 +279,26 @@ def search_questionnaires(request):
 				'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 			res_tmp.append(d)
 		return JsonResponse({'result': ACCEPT, 'message': res_tmp})
+
+@csrf_exempt
+def view(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		if data_json.get('qid', -1) != -1:
+			qid = int(data_json['qid'])
+			q = Questionnaire.objects.get(id = qid)
+		else:
+			hash = data_json['hash']
+			q = Questionnaire.objects.get(hash = hash)
+		result = {'qid':q.id, 'title':q.title, 'description':q.description, 'type':q.type}
+		questions = [x for x in Question.objects.filter(questionnaire_id = q.id)]
+		questions.sort(key=lambda x: x.rank)
+		
+		result['questions'] = []
+		for x in questions:
+			d = {'id':x.id, 'type':x.type, 'content':x.content, 'option':x.option,
+				'is_required':x.is_required }
+			result['questions'].append(d)
+		result['result'] = ACCEPT
+		result['message'] = r'获取成功!'
+		return JsonResponse(result)
