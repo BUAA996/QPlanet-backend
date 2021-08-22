@@ -6,7 +6,6 @@ from QPlanet.settings import *
 #from questionnaire.views import *
 # Create your views here.
 
-@csrf_exempt
 def save_questions(questions, qid):
     if questions:
         num = 1
@@ -15,7 +14,19 @@ def save_questions(questions, qid):
                 questionnaire_id = qid, rank = num, type = x['type'], content = x['content'], 
                 is_required = x['is_required']
             )
-            if x['type'] == SINGLE_CHOICE or MULTIPLE_CHOICE:
-                question.option = x['option']
+            if x['type'] == SINGLE_CHOICE or x['type'] == MULTIPLE_CHOICE:
+                question.option = list_to_string(x['option'])
             question.save()
             num += 1
+
+def list_to_string(option):
+    tmp = ""
+    for x in option:
+        tmp += x
+        tmp += SEPARATOR
+    return tmp
+
+def string_to_list(option):
+    tmp = option.split(SEPARATOR)
+    tmp.pop()
+    return tmp
