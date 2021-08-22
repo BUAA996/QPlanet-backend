@@ -30,7 +30,7 @@ def delete_question(qid):
 
 def get_questions(qid):
     questions = [x for x in Question.objects.filter(questionnaire_id = qid)]
-    questions.sort(key=lambda x: x.rank)
+    questions.sort(key = lambda x: x.rank)
     tmp = []
     for x in questions:
         if x['type'] == SINGLE_CHOICE or x['type'] == MULTIPLE_CHOICE:
@@ -38,6 +38,20 @@ def get_questions(qid):
                 'is_required':x.is_required, 'description':x.description }
         else:
             d = {'id':x.id, 'type':x.type, 'content':x.content, 'is_required':x.is_required,
+                'description':x.description }
+        tmp.append(d)
+    return tmp
+
+def get_questions_without_id(qid):
+    questions = [x for x in Question.objects.filter(questionnaire_id = qid)]
+    questions.sort(key = lambda x: x.rank)
+    tmp = []
+    for x in questions:
+        if x['type'] == SINGLE_CHOICE or x['type'] == MULTIPLE_CHOICE:
+            d = {'type':x.type, 'content':x.content, 'option':string_to_list(x.option),
+                'is_required':x.is_required, 'description':x.description }
+        else:
+            d = {'type':x.type, 'content':x.content, 'is_required':x.is_required,
                 'description':x.description }
         tmp.append(d)
     return tmp

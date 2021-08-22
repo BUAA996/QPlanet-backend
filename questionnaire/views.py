@@ -2,12 +2,14 @@ from result.views import delete_result
 from django.http import JsonResponse
 from django.shortcuts import render
 from questionnaire.models import *
+from user.models import *
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Max, query_utils
 from django.utils import timezone
 from QPlanet.values import *
 from QPlanet.settings import *
 from question.views import *
+from result.views import *
 import qrcode
 import json
 import datetime
@@ -326,7 +328,9 @@ def modify_questionnaire(request):
 			delete_result(qid)
 		return JsonResponse({'result': ACCEPT})
 
-@csrf_exempt
-def copy_questionnaire(request):
-	if request.method == 'GET':
-		data_json = json.loads(request.body)
+def copy_questionnaire(qid, title, to_username, include_results):
+	q = Questionnaire.objects.get(id = qid)
+	questions = get_questions_without_id(qid = qid)
+	res = build_questionnaire(title, q.description, q.type, q.limit_time, q.validity, to_username, questions)
+	if include_results == True:
+		copy_result(res[0], qid)

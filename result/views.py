@@ -38,6 +38,30 @@ def delete_result(qid):
 		Submit.objects.filter(sid = x.id).delete()
 		x.delete()
 
+# 复制过去的答卷的提交时间早于新问卷的创建时间会不会有问题？
+def copy_result(dest_qid, src_qid):
+	results = SubmitInfo.objects.get(qid = src_qid)
+	for x in results:
+		submits = Submit.objects.filter(sid = x.id)
+		submits.sort(key = lambda x: x.problem_id)
+		# problem_id实际与rank同序
+		questions = [x for x in Question.objects.filter(questionnaire_id = dest_qid)]
+		questions.sort(key = lambda x: x.rank)
+
+		total = SubmitInfo.objects.all().aggregate(Max('id'))
+		if total['id__max'] == None:
+			total = 0
+		else:
+			total = int(total['id__max']) + 1
+		submit_info = SubmitInfo(id = total, qid = dest_qid, submit_time = x.submit_time, author = x.author)
+		submit_info.save()
+
+		num = 0
+		for y in submits:
+			submit = Submit(sid = submit_info.id, problem_id = questions[num].id, type = y.type, answer = y.answer)
+			submit.save()
+			num += 1
+
 @csrf_exempt
 def analyze(request):
 	if request.method == 'POST':
