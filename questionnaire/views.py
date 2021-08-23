@@ -153,7 +153,15 @@ def release(request):
 		with open("img/"+_hash +".png","wb") as f:
 			pic.save(f)
 		return JsonResponse({'result': ACCEPT, 'message':r'发布成功!', 'url':url, 'img':IMG_URL + 'img/' + _hash + '.png'})
-	
+
+@csrf_exempt
+def get_qr(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		id = int(data_json['id'])
+		q = Questionnaire.objects.get(id = id)
+		return JsonResponse({'result': ACCEPT, 'message':r'获取成功!', 'img':IMG_URL + 'img/' + q.hash + '.png'})
+
 @csrf_exempt
 def close(request):
 	if request.method == 'POST':

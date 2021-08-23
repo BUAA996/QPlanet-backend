@@ -13,5 +13,6 @@ urlpatterns = [
 	path('search/', search_questionnaires),
 	path('view/', view),
 	path('modify/', modify_questionnaire),
-	path('copy/', copy_questionnaire)
+	path('copy/', copy_questionnaire),
+	path('getqr/', get_qr),
 ]
