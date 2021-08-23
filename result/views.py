@@ -6,6 +6,7 @@ from captcha.helpers import captcha_image_url
 from result.models import *
 from QPlanet.values import *
 from question.models import *
+from questionnaire.models import *
 from question.views import *
 from .wordclound import *
 from django.http import FileResponse
@@ -22,6 +23,9 @@ def submit(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
 		qid = int(data_json['qid'])
+		q = Questionnaire.objects.get(id = qid)
+		q.count = q.count + 1
+		q.save()
 		results = data_json['results']
 		total = SubmitInfo.objects.all().aggregate(Max('id'))
 		if total['id__max'] == None:
