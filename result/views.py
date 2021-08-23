@@ -73,19 +73,21 @@ def download(request):
 				sh.write(0, 0, r'提交ID')
 				sh.write(0, 1, r'提交时间')
 				for j in range(len(answers)):
-					sh.write(0, j+2, j)
+					p = Question.objects.get(id = answers[j].problem_id)
+					sh.write(0, j+2, p.content)
 				# Print the title
 			sh.write(i+1, 0, i)
 			sh.write(i+1, 1, submits[i].submit_time[:19])
 			for j in range(len(answers)):
 				s = string_to_list(answers[j].answer)
 				if answers[j].type == SINGLE_CHOICE:
-					ans = int(s[0])
+					ans = chr(int(s[0]) + 65)
 				elif answers[j].type == MULTIPLE_CHOICE:
+					s = [chr(int(x) + 65) for x in s]
 					ans = ','.join(s)
 				else:
 					ans = s[0]
-				sh.write(i+1, j+2, s)
+				sh.write(i+1, j+2, ans)
 		
 		name = 'img/' + str(qid) + '.xls'
 		book.save(name)
