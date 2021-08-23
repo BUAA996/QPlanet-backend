@@ -297,9 +297,9 @@ def search_questionnaires(request):
 		
 		q = data_json['query']
 
-		res_tmp=[]
+		res_tmp = []
 
-		if not q.isdigit(): # 不含数字，查标题
+		if not q.isdigit(): # 非仅数字，查标题
 			l = [x for x in Questionnaire.objects.filter(Q(own = username) & Q(title = q))]
 		else: # 仅数字
 			l = [x for x in Questionnaire.objects.filter(Q(own = username) & Q(title = q))]
@@ -347,11 +347,12 @@ def view(request):
 def modify_questionnaire(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
-
+		
 		if data_json.get('title', -1) != -1 and data_json.get('description', -1) != -1 \
 			and data_json.get('modify_type', -1) != -1 and data_json.get('limit_time', -1) != -1 \
 			and data_json.get('questions', -1) != -1 and data_json.get('qid', -1) != -1:
 			for x in data_json['questions']:
+				# 新题目 id ？
 				if x.get('id', -1) == -1 or x.get('content', -1) == -1 or x.get('is_required', -1) == -1 \
 					or x.get('description', -1) == -1:
 					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
@@ -360,7 +361,7 @@ def modify_questionnaire(request):
 					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
 		else:
 			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-			
+		
 		modify_type = data_json['modify_type']
 		qid = data_json['qid']
 		q = Questionnaire.objects.get(id = qid)
@@ -375,7 +376,7 @@ def modify_questionnaire(request):
 		q.validity = validity
 		q.limit_time = limit_time
 		q.save()
-
+		
 		# 方式一：保留答卷
 		if modify_type == 'reserve_results':	
 			update_questions(questions)
@@ -386,6 +387,8 @@ def modify_questionnaire(request):
 			q.count = 0
 			q.save()
 			delete_result(qid)
+		else:
+			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
 		return JsonResponse({'result': ACCEPT})
 
 def copy_questionnaire(qid, title, to_username):

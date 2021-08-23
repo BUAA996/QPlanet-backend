@@ -42,7 +42,7 @@ def submit(request):
 		return JsonResponse({'result': ACCEPT, 'message': r'提交成功!'})
 
 def delete_result(qid):
-	results = SubmitInfo.objects.get(qid = qid)
+	results = SubmitInfo.objects.filter(qid = qid)
 	for x in results:
 		Submit.objects.filter(sid = x.id).delete()
 		x.delete()
