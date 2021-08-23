@@ -308,11 +308,18 @@ def search_questionnaires(request):
 		l.sort(key = lambda x: x.id)
 		for x in l:
 			info = Info.objects.get(id = x.id)
-			if info.status == DELETED:
-				continue
+			#if info.status == DELETED:
+			#	continue
 			d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
 				'count':x.count, 'hash':x.hash, 'status':info.status,
 				'create_time':x.create_time[:16], 'upload_time':info.upload_time}
+			dt_time = datetime.datetime.strptime(x.create_time[:19], '%Y-%m-%d %H:%M:%S')
+			d['create_time_int'] = int(dt_time.timestamp())
+			d['upload_time_int'] = 0
+			if info.upload_time != "":
+				dt_time = datetime.datetime.strptime(info.upload_time[:19], '%Y-%m-%d %H:%M:%S')
+				d['upload_time_int'] = int(dt_time.timestamp())
+				d['upload_time'] = d['upload_time'][:16]
 			res_tmp.append(d)
 		return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 
