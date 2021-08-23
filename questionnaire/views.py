@@ -77,7 +77,7 @@ def create(request):
 					or (x.get('type') not in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) != -1):
 					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
 			res = build_questionnaire(data_json['title'], data_json['description'], int(data_json['type']), 
-				int(data_json['limit_time']), data_json['validity'], username, data_json['questions'])
+				int(data_json['limit_time']), datetime.datetime.now(), username, data_json['questions'])
 			return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': res[0], 'hash': res[1]})
 		else:
 			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
@@ -335,8 +335,6 @@ def view(request):
 		if check_close(q):
 			return JsonResponse({'result': ERROR, 'message': r'问卷已关闭!'})
 		info = Info.objects.get(id = q.id)
-		if info.status != RELEASE:
-			return JsonResponse({'result': ERROR, 'message': r'问卷未开放!'})
 		
 		result = {'qid':q.id, 'title':q.title, 'description':q.description, 'type':q.type}
 		result['questions'] = get_questions(q.id)
