@@ -87,14 +87,9 @@ def download(request):
 					ans = s[0]
 				sh.write(i+1, j+2, s)
 		
-		name = 'img/' + str(qid) + '.xlsx'
+		name = 'img/' + str(qid) + '.xls'
 		book.save(name)
-		response = HttpResponse(content_type='application/vnd.ms-excel')
-		response['Content-Disposition'] = 'attachment;filename=1.xlsx'
-		output = BytesIO()
-		book.save(output)
-		response.write(output.getvalue())
-		return response
+		return JsonResponse({'result': ACCEPT, 'message': r'成功!', 'name':str(qid) + '.xls'})
 
 '''
 # 复制过去的答卷的提交时间早于新问卷的创建时间会不会有问题？

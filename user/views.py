@@ -27,9 +27,9 @@ def register(request):
 		if Main.objects.filter(username=username).exists():
 			return JsonResponse({'result': ERROR, 'message': r'用户已存在!'})
 		
-		pattern = re.compile(r'^[0-9a-zA-z].+@buaa.edu.cn$')
-		if pattern.search(email) == None:
-			return JsonResponse({'result': ERROR, 'message': r'邮箱格式错误!'})
+		# pattern = re.compile(r'^[0-9a-zA-z].+@buaa.edu.cn$')
+		# if pattern.search(email) == None:
+		# 	 return JsonResponse({'result': ERROR, 'message': r'邮箱格式错误!'})
 		pattern = re.compile(r'^[0-9a-zA-Z]{6,16}$')
 		if pattern.search(password1) == None:
 			return JsonResponse({'result': ERROR, 'message': r'密码格式错误!'})
