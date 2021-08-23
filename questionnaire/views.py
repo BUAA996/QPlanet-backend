@@ -301,9 +301,9 @@ def search_questionnaires(request):
 		res_tmp = []
 
 		if not q.isdigit(): # 非仅数字，查标题
-			l = [x for x in Questionnaire.objects.filter(Q(own = username) & Q(title = q))]
+			l = [x for x in Questionnaire.objects.filter(Q(own = username) & Q(title__icontains = q))]
 		else: # 仅数字
-			l = [x for x in Questionnaire.objects.filter(Q(own = username) & Q(title = q))]
+			l = [x for x in Questionnaire.objects.filter(Q(own = username) & Q(title__icontains = q))]
 			l.extend([x for x in Questionnaire.objects.filter(Q(own = username) & Q(id = int(q)))])
 		l.sort(key = lambda x: x.id)
 		for x in l:
