@@ -12,5 +12,6 @@ urlpatterns = [
 	path('sorted/', get_sorted_questionnaires),
 	path('search/', search_questionnaires),
 	path('view/', view),
-	path('modify/', modify_questionnaire)
+	path('modify/', modify_questionnaire),
+	path('copy/', copy_questionnaire)
 ]
