@@ -41,6 +41,21 @@ def build_questionnaire(title, description, type, limit_time, validity, username
 	info.save()
 	return questionnaire.id, questionnaire.hash
 
+def check_close(q):
+	info = Info.objects.get(id = q.id)
+	if info.status != RELEASE:
+		return 0
+	if int(q.validity) == 998244353:
+		return 0
+	
+	begin = datetime.datetime.strptime(info.upload_time[:19], '%Y-%m-%d %H:%M:%S')
+	now = datetime.datetime.strptime(str(datetime.datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
+	if now - begin > int(q.validity):
+		info.status = CLOSED
+		info.save()
+		return 1
+	return 0
+
 @csrf_exempt
 def create(request):
 	if request.method == 'POST':
@@ -61,7 +76,7 @@ def create(request):
 					or (x.get('type') not in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) != -1):
 					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
 			res = build_questionnaire(data_json['title'], data_json['description'], int(data_json['type']), 
-				int(data_json['limit_time']), datetime.datetime.now(), username, data_json['questions'])
+				int(data_json['limit_time']), data_json['validity'], username, data_json['questions'])
 			return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': res[0], 'hash': res[1]})
 		else:
 			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
@@ -76,9 +91,9 @@ def list(request):
 		l = [x for x in Questionnaire.objects.filter(own = username)]
 		l.sort(key = lambda x: x.id)
 		l.reverse()
-		print(len(l))
 		result = {'result': ACCEPT, 'message': r'获取成功!', 'questionnaires':[]}
 		for x in l:
+			check_close(x)
 			info = Info.objects.get(id = x.id)
 			d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
 				'count':x.count, 'hash':x.hash, 'status':info.status,
@@ -312,6 +327,12 @@ def view(request):
 			if Questionnaire.objects.filter(hash=hash).exists() == False:
 				return JsonResponse({'result': ERROR, 'message': r'问卷不存在!'})
 			q = Questionnaire.objects.get(hash = hash)
+		if check_close(q):
+			return JsonResponse({'result': ERROR, 'message': r'问卷已关闭!'})
+		info = Info.objects.get(id = q.id)
+		if info.status != RELEASE:
+			return JsonResponse({'result': ERROR, 'message': r'问卷未开放!'})
+		
 		result = {'qid':q.id, 'title':q.title, 'description':q.description, 'type':q.type}
 		result['questions'] = get_questions(q.id)
 		result['result'] = ACCEPT
@@ -341,8 +362,7 @@ def modify_questionnaire(request):
 		q = Questionnaire.objects.get(id = qid)
 		title = data_json['title']
 		description = data_json['description']
-		# TODO load time
-		validity = datetime.datetime.now()
+		validity = data_json['validity']
 		limit_time = data_json['limit_time']
 		questions = data_json['questions']
 		
