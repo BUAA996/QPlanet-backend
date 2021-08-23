@@ -8,8 +8,13 @@ from QPlanet.values import *
 from question.models import *
 from question.views import *
 from .wordclound import *
+from django.http import FileResponse
+from django.http import HttpResponse
 import datetime
 import json
+import xlrd
+import xlwt
+from six import BytesIO
 # Create your views here.
 
 @csrf_exempt
@@ -37,6 +42,39 @@ def delete_result(qid):
 	for x in results:
 		Submit.objects.filter(sid = x.id).delete()
 		x.delete()
+
+@csrf_exempt
+def download(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		qid = int(data_json['qid'])
+		book = xlwt.Workbook(encoding = 'ascii')
+		sh = book.add_sheet('Sheet1')
+		
+		submits = [x for x in SubmitInfo.objects.filter(qid = qid)]
+		submits.sort(key = lambda x: x.submit_time)
+		for i in range(len(submits)):
+			answers = [x for x in Submit.objects.filter(sid = submits[i].id)]
+			answers.sort(key = lambda x: x.problem_id)
+			if i == 0:
+				sh.write(0, 0, r'提交ID')
+				sh.write(0, 1, r'提交时间')
+				for j in range(len(answers)):
+					sh.write(0, j+2, j)
+				# Print the title
+			sh.write(i+1, 0, i)
+			sh.write(i+1, 1, submits[i].submit_time[:19])
+			for j in range(len(answers)):
+				sh.write(i+1, j+2, answers[j].answer)
+		name = 'img/' + str(qid) + '.xlsx'
+		book.save(name)
+		response = HttpResponse(content_type='application/vnd.ms-excel')
+		response['Content-Disposition'] = 'attachment;filename=1.xlsx'
+		output = BytesIO()
+		book.save(output)
+		response.write(output.getvalue())
+		return response
+
 '''
 # 复制过去的答卷的提交时间早于新问卷的创建时间会不会有问题？
 def copy_result(dest_qid, src_qid):
@@ -62,6 +100,7 @@ def copy_result(dest_qid, src_qid):
 			submit.save()
 			num += 1
 '''
+
 @csrf_exempt
 def analyze(request):
 	if request.method == 'POST':
