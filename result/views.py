@@ -144,20 +144,21 @@ def analyze(request):
 		questions.sort(key = lambda x : x.rank)
 		for q in questions:
 			if q.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
-				result['questions'].append({'type': q.type, 
+				result['questions'].append({'content': q.content,
+											'type': q.type, 
 											'option': string_to_list(q.option),
 											'count':[0]*len(string_to_list(q.option))})
 			else:
-				result['questions'].append({'type': q.type, 'url':''})
+				result['questions'].append({'content': q.content, 'type': q.type})
 		# Put basic question informations
 
 		for i in range(len(questions)):
 			if questions[i].type not in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
 				answers = [x.answer for x in Submit.objects.filter(problem_id = questions[i].id)]
 				s = " ".join(answers)
-				result['questions'][i]['url'] = draw_wordcloud(s)
+				# result['questions'][i]['url'] = draw_wordcloud(s)
 				a,b = word_count(s)
-				result['questions'][i]['words'] = a
+				result['questions'][i]['option'] = a
 				result['questions'][i]['count'] = b
 			else:
 				all = [x for x in Submit.objects.filter(problem_id = questions[i].id)]
