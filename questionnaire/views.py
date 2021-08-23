@@ -321,7 +321,11 @@ def view(request):
 		data_json = json.loads(request.body)
 		if data_json.get('qid', -1) != -1:
 			qid = int(data_json['qid'])
+			if request.session.get('is_login') != True:
+				return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
 			q = Questionnaire.objects.get(id = qid)
+			if q.own != request.session.get('user'):
+				return JsonResponse({'result': ERROR, 'message': r'您没有权限!'})
 		else:
 			hash = data_json['hash']
 			if Questionnaire.objects.filter(hash=hash).exists() == False:
