@@ -37,7 +37,7 @@ def delete_result(qid):
 	for x in results:
 		Submit.objects.filter(sid = x.id).delete()
 		x.delete()
-
+'''
 # 复制过去的答卷的提交时间早于新问卷的创建时间会不会有问题？
 def copy_result(dest_qid, src_qid):
 	results = SubmitInfo.objects.get(qid = src_qid)
@@ -61,7 +61,7 @@ def copy_result(dest_qid, src_qid):
 			submit = Submit(sid = submit_info.id, problem_id = questions[num].id, type = y.type, answer = y.answer)
 			submit.save()
 			num += 1
-
+'''
 @csrf_exempt
 def analyze(request):
 	if request.method == 'POST':

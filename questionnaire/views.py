@@ -325,12 +325,24 @@ def modify_questionnaire(request):
 		elif modify_type == 'delete_all_results':
 			delete_question(qid)
 			save_questions(questions, qid)
+			q.count = 0
+			q.save()
 			delete_result(qid)
 		return JsonResponse({'result': ACCEPT})
 
-def copy_questionnaire(qid, title, to_username, include_results):
+def copy_questionnaire(qid, title, to_username):
 	q = Questionnaire.objects.get(id = qid)
 	questions = get_questions_without_id(qid = qid)
 	res = build_questionnaire(title, q.description, q.type, q.limit_time, q.validity, to_username, questions)
-	if include_results == True:
-		copy_result(res[0], qid)
+	return res
+
+@csrf_exempt
+def copy_questionnaire_to_self(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		qid = data_json['qid']
+		title = data_json['title']
+		username = request.session.get('user')
+		res = copy_questionnaire(qid, title, username)
+		result = {'result': ACCEPT, 'copy_id': res[0], 'copy_hash': res[1]}
+		return JsonResponse(result)
