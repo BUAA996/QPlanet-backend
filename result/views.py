@@ -109,8 +109,11 @@ def copy_result(dest_qid, src_qid):
 def analyze(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
-		qid = int(data_json['qid'])
+		hash = data_json['hash']
+		q = Questionnaire.objects.get(hash = hash)
+		qid = q.id
 		result = {'qid': qid}
+		
 		infos = [x for x in SubmitInfo.objects.filter(qid = qid)]
 		
 		result['result'] = ACCEPT
