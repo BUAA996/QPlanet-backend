@@ -320,6 +320,20 @@ def view(request):
 def modify_questionnaire(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
+
+		if data_json.get('title', -1) != -1 and data_json.get('description', -1) != -1 \
+			and data_json.get('modify_type', -1) != -1 and data_json.get('limit_time', -1) != -1 \
+			and data_json.get('questions', -1) != -1 and data_json.get('qid', -1) != -1:
+			for x in data_json['questions']:
+				if x.get('id', -1) == -1 or x.get('content', -1) == -1 or x.get('is_required', -1) == -1 \
+					or x.get('description', -1) == -1:
+					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
+				if (x.get('type') in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) == -1) \
+					or (x.get('type') not in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) != -1):
+					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
+		else:
+			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
+			
 		modify_type = data_json['modify_type']
 		qid = data_json['qid']
 		q = Questionnaire.objects.get(id = qid)
@@ -338,8 +352,7 @@ def modify_questionnaire(request):
 
 		# 方式一：保留答卷
 		if modify_type == 'reserve_results':	
-			for x in questions:
-				update_question(x['id'], x['content'], x['is_required'], x['description'], x['option'])
+			update_questions(questions)
 		# 方式二：删除所有答卷（题目删掉重写）
 		elif modify_type == 'delete_all_results':
 			delete_question(qid)

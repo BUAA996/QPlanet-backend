@@ -56,11 +56,15 @@ def get_questions_without_id(qid):
         tmp.append(d)
     return tmp
 
-def update_question(id, content, is_required, description, option):
-    question = Question.objects.get(id = id)
-    question.content= content
-    question.is_required = is_required
-    question.description = description
-    if type == SINGLE_CHOICE or type == MULTIPLE_CHOICE:
-        question.option = list_to_string(option)
-    question.save()
+def update_questions(questions):
+    num = 1
+    for x in questions:
+        question = Question.objects.get(id = x['id'])
+        question.content= x['content']
+        question.is_required = x['is_required']
+        question.description = x['description']
+        question.rank = num
+        if type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+            question.option = list_to_string(x['option'])
+        question.save()
+        num += 1
