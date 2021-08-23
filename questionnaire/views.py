@@ -309,6 +309,8 @@ def view(request):
 			q = Questionnaire.objects.get(id = qid)
 		else:
 			hash = data_json['hash']
+			if Questionnaire.objects.filter(hash=hash).exists() == False:
+				return JsonResponse({'result': ERROR, 'message': r'问卷不存在!'})
 			q = Questionnaire.objects.get(hash = hash)
 		result = {'qid':q.id, 'title':q.title, 'description':q.description, 'type':q.type}
 		result['questions'] = get_questions(q.id)
