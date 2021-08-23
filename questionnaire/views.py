@@ -42,6 +42,7 @@ def build_questionnaire(title, description, type, limit_time, validity, username
 	return questionnaire.id, questionnaire.hash
 
 def check_close(q):
+	return 0
 	info = Info.objects.get(id = q.id)
 	if info.status != RELEASE:
 		return 0

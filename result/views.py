@@ -36,7 +36,12 @@ def submit(request):
 		submitinfo = SubmitInfo(id = total, qid = qid, submit_time = str(datetime.datetime.now()))
 		submitinfo.save()
 		for i in results:
-			submit = Submit(sid = total, problem_id = int(i['problem_id']), type = int(i['type']), answer = i['answer'])
+			submit = Submit(sid = total, problem_id = int(i['problem_id']), type = int(i['type']), answer = "")
+			if i['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+				ans = list_to_string(i['answer'])
+			else:
+				ans = i['answer'][0]
+			submit.answer = ans
 			submit.save()
 		
 		return JsonResponse({'result': ACCEPT, 'message': r'提交成功!'})
@@ -51,7 +56,11 @@ def delete_result(qid):
 def download(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
-		qid = int(data_json['qid'])
+		hash = data_json['hash']
+		if Questionnaire.objects.filter(hash = hash).exists() == False:
+			return JsonResponse({'result': ERROR, 'message': r'问卷不存在!'})
+		q = Questionnaire.objects.get(hash = hash)
+		qid = q.id
 		book = xlwt.Workbook(encoding = 'ascii')
 		sh = book.add_sheet('Sheet1')
 		
@@ -69,7 +78,15 @@ def download(request):
 			sh.write(i+1, 0, i)
 			sh.write(i+1, 1, submits[i].submit_time[:19])
 			for j in range(len(answers)):
-				sh.write(i+1, j+2, answers[j].answer)
+				s = string_to_list(answers[j].answer)
+				if answers[j].type == SINGLE_CHOICE:
+					ans = int(s[0])
+				elif answers[j].type == MULTIPLE_CHOICE:
+					ans = ','.join(s)
+				else:
+					ans = s[0]
+				sh.write(i+1, j+2, s)
+		
 		name = 'img/' + str(qid) + '.xlsx'
 		book.save(name)
 		response = HttpResponse(content_type='application/vnd.ms-excel')
@@ -138,18 +155,17 @@ def analyze(request):
 			if questions[i].type not in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
 				answers = [x.answer for x in Submit.objects.filter(problem_id = questions[i].id)]
 				s = " ".join(answers)
-				print(s)
 				result['questions'][i]['url'] = draw_wordcloud(s)
 				a,b = word_count(s)
 				result['questions'][i]['words'] = a
 				result['questions'][i]['count'] = b
 			else:
-				print(questions[i].id)
 				all = [x for x in Submit.objects.filter(problem_id = questions[i].id)]
 				for x in all:
-					op = int(x.answer)
-					result['questions'][i]['count'][op] +=1
-
+					s = string_to_list(x.answer)
+					s = [int(op) for op in s]
+					for op in s:
+						result['questions'][i]['count'][op] +=1
 		return JsonResponse(result)
 
 		# Some calculations
