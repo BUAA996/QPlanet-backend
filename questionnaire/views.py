@@ -17,6 +17,10 @@ import random
 import string
 from django import utils
 from django.db.models import Q
+from docx import Document
+from docx.oxml.ns import qn
+from docx.shared import Pt,RGBColor
+from docx2pdf import convert
 # Create your views here.
 
 def build_questionnaire(title, description, type, limit_time, validity, username, questions):
@@ -377,6 +381,7 @@ def modify_questionnaire(request):
 		limit_time = data_json['limit_time']
 		questions = data_json['questions']
 		
+		q.status = SAVED
 		q.title = title
 		q.description = description
 		q.validity = validity
@@ -413,3 +418,51 @@ def copy_questionnaire_to_self(request):
 		res = copy_questionnaire(qid, title, username)
 		result = {'result': ACCEPT, 'copy_id': res[0], 'copy_hash': res[1]}
 		return JsonResponse(result)
+
+@csrf_exempt
+def download(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		if data_json.get('id', -1) != -1:
+			id = int(data_json['id'])
+			q = Questionnaire.objects.get(id = id)
+		else:
+			hash = data_json['hash']
+			q = Questionnaire.objects.get(hash = hash)
+		problems = [x for x in Question.objects.filter(questionnaire_id = q.id)]
+		name = str(q.id)
+
+		document = Document()
+		Head = document.add_heading("",level=1)
+		run  = Head.add_run(q.title)
+		run.font.name=u'Cambria'
+		run._element.rPr.rFonts.set(qn('w:eastAsia'), u'Cambria')
+		run.font.color.rgb = RGBColor(0,0,0)
+		
+		paragraph = document.add_paragraph("\n")
+		count = 1
+		for x in problems:
+			if x.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+				s = str(count) + "."
+				if x.type == SINGLE_CHOICE:
+					s += r'(单选) '
+				else:
+					s += r'(多选) '
+				paragraph = document.add_paragraph(s + x.content)
+				options = string_to_list(x.option)
+				for j in range(len(options)):
+					s = chr(j + 65) + '. '
+					s = s + options[j]
+					paragraph = document.add_paragraph(s)
+				paragraph = document.add_paragraph("\n")
+			else:
+				s = str(count) + r".(填空) "
+				paragraph = document.add_paragraph(s + x.content)
+				paragraph = document.add_paragraph(r'___________________')
+				paragraph = document.add_paragraph("\n")
+			count += 1
+		
+		document.save('img/' + name + '.docx')
+
+		return JsonResponse({'result': ACCEPT, 'message':r'获取成功!', 
+							'doc_name':name + '.docx', 'pdf_name':name + '.pdf'})

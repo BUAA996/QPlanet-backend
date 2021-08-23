@@ -15,4 +15,5 @@ urlpatterns = [
 	path('modify/', modify_questionnaire),
 	path('copy/', copy_questionnaire_to_self),
 	path('getqr/', get_qr),
+	path('download/', download),
 ]

@@ -8,4 +8,6 @@ urlpatterns = [
 	path('getcode/', send_code),
 	path('captcha/', get_captcha),
 	path('islogin/', is_login), 
+	path('info/', info),
+	path('change/', change_password),
 ]

@@ -7,6 +7,7 @@ from captcha.helpers import captcha_image_url
 from user.models import *
 from QPlanet.values import *
 from user.email_send import *
+from questionnaire.models import *
 import re
 import json
 # Create your views here.
@@ -87,14 +88,12 @@ def is_login(request):
 @csrf_exempt
 def send_code(request):
 	if request.method == 'POST':
-		if request.session.get('is_login') == True:
-			return JsonResponse({'result': ERROR, 'message': r'已登录!'})
-		
 		data_json = json.loads(request.body)
 		email = data_json.get('email')
-		pattern = re.compile(r'^[0-9a-zA-z].+@buaa.edu.cn$')
-		if pattern.search(email) == None:
-			return JsonResponse({'result': ERROR, 'message': r'邮箱格式错误!'})
+		
+		# pattern = re.compile(r'^[0-9a-zA-z].+@buaa.edu.cn$')
+		# if pattern.search(email) == None:
+		# 	 return JsonResponse({'result': ERROR, 'message': r'邮箱格式错误!'})
 		
 		send_code_email(email)
 		return JsonResponse({'result': ACCEPT, 'message': r'发送成功!'})
@@ -108,3 +107,28 @@ def get_captcha(request):
 		captcha = CaptchaStore.objects.get(hashkey = data['new_cptch_key'])
 		data['key'] = captcha.response
 		return JsonResponse(data)
+
+@csrf_exempt
+def info(request):
+	if request.method == 'POST':
+		username  = request.session.get('user')
+		user = Main.objects.get(username = username)
+		q = [x for x in Questionnaire.objects.filter(own = username)]
+		
+		return JsonResponse({'result': ACCEPT, 'message': r'获取成功!', 'username':username, 'email':user.email, 
+				'count': len(q)})
+
+@csrf_exempt
+def change_password(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		username  = request.session.get('user')
+		user = Main.objects.get(username = username)
+		password1 = data_json['password1']
+		password2 = data_json['password2']
+		if password1 != password2:
+			return JsonResponse({'result': ERROR, 'message': r'密码不一致!'})
+		else:
+			user.password = password1
+			user.save()
+			return JsonResponse({'result': ACCEPT, 'message':r'修改成功!'})
