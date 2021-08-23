@@ -49,11 +49,22 @@ def create(request):
 
 		data_json = json.loads(request.body)
 		username = request.session.get('user')
-		
 		# TODO load time
-		res = build_questionnaire(data_json['title'], data_json['description'], int(data_json['type']), 
-			int(data_json['limit_time']), datetime.datetime.now(), username, data_json['questions'])
-		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': res[0], 'hash': res[1]})
+		if data_json.get('title', -1) != -1 and data_json.get('description', -1) != -1 \
+			and data_json.get('type', -1) != -1 and data_json.get('limit_time', -1) != -1 \
+			and data_json.get('questions', -1) != -1 :
+			for x in data_json['questions']:
+				if x.get('type', -1) == -1 or x.get('content', -1) == -1 or x.get('is_required', -1) == -1 \
+					or x.get('description', -1) == -1:
+					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
+				if (x.get('type') in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) == -1) \
+					or (x.get('type') not in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) != -1):
+					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
+			res = build_questionnaire(data_json['title'], data_json['description'], int(data_json['type']), 
+				int(data_json['limit_time']), datetime.datetime.now(), username, data_json['questions'])
+			return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': res[0], 'hash': res[1]})
+		else:
+			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
 
 @csrf_exempt
 def list(request):
