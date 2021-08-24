@@ -343,9 +343,27 @@ def view(request):
 			if Questionnaire.objects.filter(hash=hash).exists() == False:
 				return JsonResponse({'result': ERROR, 'message': r'问卷不存在!'})
 			q = Questionnaire.objects.get(hash = hash)
-		if check_close(q):
-			return JsonResponse({'result': ERROR, 'message': r'问卷已关闭!'})
+		# if check_close(q):
+		# 	 return JsonResponse({'result': ERROR, 'message': r'问卷已关闭!'})
 		info = Info.objects.get(id = q.id)
+		
+		result = {'qid':q.id, 'title':q.title, 'description':q.description, 'type':q.type}
+		result['questions'] = get_questions(q.id)
+		result['result'] = ACCEPT
+		result['message'] = r'获取成功!'
+		return JsonResponse(result)
+
+@csrf_exempt
+def fill(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		hash = data_json['hash']
+		if Questionnaire.objects.filter(hash=hash).exists() == False:
+			return JsonResponse({'result': ERROR, 'message': r'问卷不存在!'})
+		q = Questionnaire.objects.get(hash = hash)
+		info = Info.objects.get(id = q.id)
+		if info.status != RELEASE:
+			return JsonResponse({'result': ERROR, 'message': r'问卷已关闭!'})
 		
 		result = {'qid':q.id, 'title':q.title, 'description':q.description, 'type':q.type}
 		result['questions'] = get_questions(q.id)
@@ -389,7 +407,7 @@ def modify_questionnaire(request):
 		q.save()
 		
 		# 方式一：保留答卷
-		if modify_type == 'reserve_results':	
+		if modify_type == 'reserve_results':
 			update_questions(questions)
 		# 方式二：删除所有答卷（题目删掉重写）
 		elif modify_type == 'delete_all_results':
@@ -456,9 +474,15 @@ def download(request):
 					paragraph = document.add_paragraph(s)
 				paragraph = document.add_paragraph("\n")
 			else:
-				s = str(count) + r".(填空) "
+				if x.type == COMPLETION:
+					s = str(count) + r".(填空) "
+				else:
+					s = str(count) + r".(简答) "
 				paragraph = document.add_paragraph(s + x.content)
 				paragraph = document.add_paragraph(r'___________________')
+				if x.type == DESCRIPTION:
+					paragraph = document.add_paragraph(r'___________________')
+					paragraph = document.add_paragraph(r'___________________')
 				paragraph = document.add_paragraph("\n")
 			count += 1
 		

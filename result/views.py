@@ -80,6 +80,8 @@ def download(request):
 			sh.write(i+1, 1, submits[i].submit_time[:19])
 			for j in range(len(answers)):
 				s = string_to_list(answers[j].answer)
+				if len(s) == 0 or s[0] == "":
+					continue
 				if answers[j].type == SINGLE_CHOICE:
 					ans = chr(int(s[0]) + 65)
 				elif answers[j].type == MULTIPLE_CHOICE:

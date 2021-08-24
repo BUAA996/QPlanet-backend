@@ -31,10 +31,11 @@ def register(request):
 		# pattern = re.compile(r'^[0-9a-zA-z].+@buaa.edu.cn$')
 		# if pattern.search(email) == None:
 		# 	 return JsonResponse({'result': ERROR, 'message': r'邮箱格式错误!'})
-		pattern = re.compile(r'^[0-9a-zA-Z]{6,16}$')
-		if pattern.search(password1) == None:
-			return JsonResponse({'result': ERROR, 'message': r'密码格式错误!'})
-		
+		# pattern = re.compile(r'^[0-9a-zA-Z]{6,16}$')
+		# if pattern.search(password1) == None:
+		# 	 return JsonResponse({'result': ERROR, 'message': r'密码格式错误!'})
+		print(password1)
+		print(password2)
 		if password1 != password2:
 			return JsonResponse({'result': ERROR, 'message': r'密码不匹配!'})
 		
@@ -111,6 +112,8 @@ def get_captcha(request):
 @csrf_exempt
 def info(request):
 	if request.method == 'POST':
+		if request.session.get('is_login', 0) != True:
+			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
 		username  = request.session.get('user')
 		user = Main.objects.get(username = username)
 		q = [x for x in Questionnaire.objects.filter(own = username)]
