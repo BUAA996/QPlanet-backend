@@ -161,6 +161,8 @@ def analyze(request):
 				all = [x for x in Submit.objects.filter(problem_id = questions[i].id)]
 				for x in all:
 					s = string_to_list(x.answer)
+					if len(s) == 0 or s[0] == '':
+						continue
 					s = [int(op) for op in s]
 					for op in s:
 						result['questions'][i]['count'][op] +=1
