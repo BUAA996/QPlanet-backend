@@ -62,10 +62,11 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
-CORS_ORIGIN_ALLOW_ALL = True   # 允许所有源访问
+CORS_ORIGIN_ALLOW_ALL = False   # 允许所有源访问
 CORS_ORIGIN_WHITELIST = (
-    'http://127.0.0.1:8000',    #设置白名单
-    'http://localhost:8000',
+    'http://127.0.0.1:3000',    #设置白名单
+    'http://localhost:3000',
+    'https://qplanet.matrix53.top'
 )
 
 CORS_ALLOW_METHODS = (
