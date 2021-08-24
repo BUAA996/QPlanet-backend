@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-3t(*=gr(lrks*91*%ddg#ef$)@*)$a7m)2^%mrgjhvn3^2+%v&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost','api.matrix53.top','127.0.0.1','123.57.194.168']
 
 
 # Application definition
