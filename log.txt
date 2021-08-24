@@ -1,4 +1,0 @@
-root     15844     1  0 10:01 pts/2    00:00:00 python manage.py runserver 0.0.0.0:8000
-root     27190 15844 14 10:05 pts/2    00:00:08 /usr/bin/python manage.py runserver 0.0.0.0:8000
-root     27931 27928  0 10:06 pts/2    00:00:00 sh -c ps -ef | grep "runserver" > log.txt
-root     27933 27931  0 10:06 pts/2    00:00:00 grep runserver
