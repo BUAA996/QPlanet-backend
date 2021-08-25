@@ -20,3 +20,4 @@ class Phone(models.Model):
 	captcha = models.CharField(max_length = 6)
 	sid = models.IntegerField(null = True, blank = True)
 	qid = models.IntegerField(null = True, blank = True)
+	# order 
