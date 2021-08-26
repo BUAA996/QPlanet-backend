@@ -28,4 +28,4 @@ def send_code(phone):
 	request.add_query_param('TemplateParam', "{\"code\": " + number + "}")
 
 	response = client.do_action(request)
-	return 1
+	return number

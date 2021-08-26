@@ -1,0 +1,72 @@
+Date : 2021-08-26 22:55:02
+Directory : e:\Code Warehouse\Django Warehouse\QPlanet
+Total : 42 files,  1386 codes, 123 comments, 244 blanks, all 1753 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| Python   |         41 |      1,378 |        123 |        244 |      1,745 |
+| YAML     |          1 |          8 |          0 |          0 |          8 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                 | files      | code       | comment    | blank      | total      |
++----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                    |         42 |      1,386 |        123 |        244 |      1,753 |
+| QPlanet                                                              |          6 |        193 |         60 |         67 |        320 |
+| question                                                             |          6 |         94 |          5 |         19 |        118 |
+| questionnaire                                                        |          7 |        528 |         19 |         64 |        611 |
+| result                                                               |          9 |        337 |         23 |         44 |        404 |
+| user                                                                 |          8 |        177 |         13 |         37 |        227 |
++----------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                             | language | code       | comment    | blank      | total      |
++----------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| e:\Code Warehouse\Django Warehouse\QPlanet\QPlanet\__init__.py       | Python   |          2 |          0 |          0 |          2 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\QPlanet\asgi.py           | Python   |          4 |          8 |          5 |         17 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\QPlanet\settings.py       | Python   |        136 |         28 |         47 |        211 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\QPlanet\urls.py           | Python   |         15 |         15 |          2 |         32 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\QPlanet\values.py         | Python   |         32 |          1 |          8 |         41 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\QPlanet\wsgi.py           | Python   |          4 |          8 |          5 |         17 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\config.yaml               | YAML     |          8 |          0 |          0 |          8 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\kill.py                   | Python   |          9 |          0 |          1 |         10 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\local.py                  | Python   |          4 |          0 |          1 |          5 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\manage.py                 | Python   |         15 |          3 |          5 |         23 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\question\__init__.py      | Python   |          2 |          0 |          0 |          2 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\question\admin.py         | Python   |          1 |          1 |          2 |          4 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\question\apps.py          | Python   |          4 |          0 |          3 |          7 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\question\models.py        | Python   |         16 |          1 |          3 |         20 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\question\tests.py         | Python   |          1 |          1 |          2 |          4 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\question\views.py         | Python   |         70 |          2 |          9 |         81 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\questionnaire\__init__.py | Python   |          2 |          0 |          0 |          2 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\questionnaire\admin.py    | Python   |          1 |          1 |          2 |          4 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\questionnaire\apps.py     | Python   |          4 |          0 |          3 |          7 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\questionnaire\models.py   | Python   |         24 |          1 |          8 |         33 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\questionnaire\tests.py    | Python   |          1 |          1 |          2 |          4 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\questionnaire\urls.py     | Python   |         20 |          0 |          1 |         21 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\questionnaire\views.py    | Python   |        476 |         16 |         48 |        540 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\result\__init__.py        | Python   |          2 |          0 |          0 |          2 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\result\admin.py           | Python   |          1 |          1 |          2 |          4 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\result\apps.py            | Python   |          4 |          0 |          3 |          7 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\result\models.py          | Python   |         17 |          2 |          4 |         23 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\result\tests.py           | Python   |          1 |          1 |          2 |          4 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\result\urls.py            | Python   |          9 |          0 |          1 |         10 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\result\verify.py          | Python   |         23 |          3 |          5 |         31 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\result\views.py           | Python   |        248 |         16 |         23 |        287 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\result\wordclound.py      | Python   |         32 |          0 |          4 |         36 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\run.py                    | Python   |          5 |          0 |          1 |          6 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\test.py                   | Python   |         16 |          0 |          5 |         21 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\user\__init__.py          | Python   |          2 |          0 |          0 |          2 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\user\admin.py             | Python   |          1 |          1 |          2 |          4 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\user\apps.py              | Python   |          4 |          0 |          3 |          7 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\user\email_send.py        | Python   |         40 |          1 |          9 |         50 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\user\models.py            | Python   |          8 |          2 |          2 |         12 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\user\tests.py             | Python   |          1 |          1 |          2 |          4 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\user\urls.py              | Python   |         12 |          0 |          1 |         13 |
+| e:\Code Warehouse\Django Warehouse\QPlanet\user\views.py             | Python   |        109 |          8 |         18 |        135 |
+| Total                                                                |          |      1,386 |        123 |        244 |      1,753 |
++----------------------------------------------------------------------+----------+------------+------------+------------+------------+
