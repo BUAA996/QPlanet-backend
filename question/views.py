@@ -48,9 +48,9 @@ def save_questions(questions, qid):
                     content = answer_to_string(tmp['content']))
             num += 1
 
-def delete_question(qid):
+def delete_questions(qid):
     Question.objects.filter(questionnaire_id = qid).delete()
-    
+    StandardAnswer.objects.filter(qid =qid).delete()
 
 def get_questions(qid):
     questions = [x for x in Question.objects.filter(questionnaire_id = qid)]

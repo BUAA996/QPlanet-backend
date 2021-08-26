@@ -153,7 +153,7 @@ def delete(request):
 		q = Info.objects.get(id = id)
 		if q.state == DELETED:
 			questionnaire = Questionnaire.objects.get(id = q.id)
-			delete_question(id)
+			delete_questions(id)
 			delete_result(id)
 			questionnaire.delete()
 			q.delete()
@@ -435,7 +435,7 @@ def modify_questionnaire(request):
 			update_questions(questions, type) # TODO
 		# 方式二：删除所有答卷（题目删掉重写）
 		elif modify_type == 'delete_all_results':
-			delete_question(qid)
+			delete_questions(qid)
 			save_questions(questions, qid)
 			q.count = 0
 			q.save()
