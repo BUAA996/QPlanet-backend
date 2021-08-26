@@ -6,11 +6,20 @@ from QPlanet.settings import *
 #from questionnaire.views import *
 # Create your views here.
 
-def list_to_string(option):
-    return SEPARATOR.join(option)
+def list_to_string(option, quota):
+    return SEPARATOR.join(option + list(map(str, quota)))
 
-def string_to_list(option):
-    return option.split(SEPARATOR)
+def string_to_list(extra):
+    tmp = list(extra.split(SEPARATOR))
+    option = tmp[: len(tmp) // 2 + 1]
+    quota = tmp[len(tmp) // 2 + 1: ]
+    return option, list(map(int, quota))
+
+def int_to_string(lower, upper):
+    return SEPARATOR.join([str(lower), str(upper)])
+
+def string_to_int(extra):
+    return list(map(int, extra.split(SEPARATOR)))
 
 def save_questions(questions, qid):
     if questions:
@@ -20,8 +29,10 @@ def save_questions(questions, qid):
                 questionnaire_id = qid, rank = num, type = x['type'], content = x['content'], 
                 is_required = x['is_required'], description = x['description']
             )
-            if x['type'] == SINGLE_CHOICE or x['type'] == MULTIPLE_CHOICE:
-                question.option = list_to_string(x['option'])
+            if x['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+                question.extra = list_to_string(x['option'], x['quota'])
+            else:
+                question.extra = int_to_string(x['lower'], x['upper'])
             question.save()
             num += 1
 
