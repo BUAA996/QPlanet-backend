@@ -10,7 +10,7 @@ class Questionnaire(models.Model):
 	type = models.IntegerField()
 	
 	create_time = models.DateTimeField(auto_now_add = True, editable = False)
-	#validity = models.DateTimeField()
+	deadline = models.DateTimeField()
 	duration = models.IntegerField()  #  考试时长
 
 	count = models.IntegerField()
@@ -19,6 +19,7 @@ class Questionnaire(models.Model):
 	random_order = models.BooleanField(default = False)
 	select_less_score = models.BooleanField(default = False)  #  少选得分
 	certification = models.IntegerField()
+	show_number = models.BooleanField(default = True)		  #  显示题号
 
 class Info(models.Model):
 	id = models.IntegerField(primary_key = True)
