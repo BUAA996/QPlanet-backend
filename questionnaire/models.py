@@ -13,6 +13,7 @@ class Questionnaire(models.Model):
 	deadline = models.DateTimeField()
 	duration = models.IntegerField()  #  考试时长
 
+	quota = models.IntegerField(null = True, blank = True)
 	count = models.IntegerField()
 	hash = models.CharField(max_length = 20)
 

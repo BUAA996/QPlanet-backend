@@ -9,6 +9,7 @@ class Question(models.Model):
 	type = models.IntegerField()
 	content = models.TextField()
 	is_required = models.BooleanField(default = False)
+	is_essential = models.BooleanField(default = False)
 	description = models.TextField()
 	extra = models.TextField()
 
