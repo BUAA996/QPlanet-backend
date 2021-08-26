@@ -1,3 +1,4 @@
+from questionnaire.models import Questionnaire
 from django.shortcuts import render
 from question.models import *
 from django.views.decorators.csrf import csrf_exempt
@@ -15,11 +16,17 @@ def string_to_list(extra):
     quota = tmp[len(tmp) // 2 + 1: ]
     return option, list(map(int, quota))
 
-def int_to_string(lower, upper):
-    return SEPARATOR.join([str(lower), str(upper)])
+def int_to_string(lower, upper, requirement):
+    return SEPARATOR.join([str(lower), str(upper), str(requirement)])
 
 def string_to_int(extra):
     return list(map(int, extra.split(SEPARATOR)))
+
+def answer_to_string(answer):
+    return SEPARATOR.join(answer)
+
+def string_to_answer(answer):
+    return answer.split(SEPARATOR)
 
 def save_questions(questions, qid):
     if questions:
@@ -31,13 +38,19 @@ def save_questions(questions, qid):
             )
             if x['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
                 question.extra = list_to_string(x['option'], x['quota'])
-            else:
-                question.extra = int_to_string(x['lower'], x['upper'])
+            elif x['type'] in [COMPLETION, DESCRIPTION]:
+                question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])
             question.save()
+            if question.get('standard_answer', -1) != -1:
+                tmp = question.get('standard_answer')
+                question_id = Question.objects.filter(questionnaire_id = qid, rank = num)
+                standard_answer = StandardAnswer.objects.create(qid = question_id, type = x['type'], score = tmp['score'],
+                                content = answer_to_string(tmp['content']))
             num += 1
 
 def delete_question(qid):
     Question.objects.filter(questionnaire_id = qid).delete()
+    
 
 def get_questions(qid):
     questions = [x for x in Question.objects.filter(questionnaire_id = qid)]
