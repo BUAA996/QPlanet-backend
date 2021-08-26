@@ -23,7 +23,24 @@ from docx.shared import Pt,RGBColor
 from docx2pdf import convert
 # Create your views here.
 
-def build_questionnaire(title, description, type, limit_time, validity, username, questions):
+def check_close(q):
+	#TODO calculate the res
+	info = Info.objects.get(id = q.id)
+	if info.status != RELEASE:
+		return 0
+	if datetime.datetime.now() < q.deadline:
+		return 0
+	info.status = CLOSED
+	info.save()
+	return 1
+
+def hash(id):
+	q = Questionnaire.objects.get(id = id)
+	q.hash = ''.join(random.sample(string.ascii_letters + string.digits, 7)) + str(q.type)
+	q.save()
+	return q.hash
+
+def build_questionnaire(title, description, own, type, deadline, duration, random_order, select_less_score, certification, show_number, questions):
 	total = Questionnaire.objects.all().aggregate(Max('id'))
 	if total['id__max'] == None:
 		total = 1
@@ -31,9 +48,10 @@ def build_questionnaire(title, description, type, limit_time, validity, username
 		total = int(total['id__max']) + 1
 		
 	questionnaire = Questionnaire(
-		id = total, title = title, description = description, type = type, own = username,
-		validity = validity, limit_time = limit_time, create_time = str(datetime.datetime.now()),
-		count = 0, hash = ""
+		id = total, title = title, description = description, own = own, type = type,
+		create_time = str(datetime.datetime.now()), deadline = deadline, duration = duration,
+		count = 0, hash = "", random_order = random_order, select_less_score = select_less_score,
+		certification = certification, show_number = show_number
 	)
 	questionnaire.save()
 	questionnaire.hash = hash(total)
@@ -43,23 +61,7 @@ def build_questionnaire(title, description, type, limit_time, validity, username
 
 	info = Info(id = total, status = SAVED, upload_time = "")
 	info.save()
-	return questionnaire.id, questionnaire.hash
-
-def check_close(q):
-	return 0
-	info = Info.objects.get(id = q.id)
-	if info.status != RELEASE:
-		return 0
-	if int(q.validity) == 998244353:
-		return 0
-	
-	begin = datetime.datetime.strptime(info.upload_time[:19], '%Y-%m-%d %H:%M:%S')
-	now = datetime.datetime.strptime(str(datetime.datetime.now())[:19], '%Y-%m-%d %H:%M:%S')
-	if now - begin > int(q.validity):
-		info.status = CLOSED
-		info.save()
-		return 1
-	return 0
+	return [questionnaire.id, questionnaire.hash]
 
 @csrf_exempt
 def create(request):
@@ -69,7 +71,23 @@ def create(request):
 
 		data_json = json.loads(request.body)
 		username = request.session.get('user')
-		# TODO load time
+
+		res = build_questionnaire(title = data_json['title'],
+					description = data_json['description'],
+					own = username,
+					type = int(data_json['type']),
+					deadline = data_json.get('deadline', datetime.datetime.now()+datetime.timedelta(hours = 72)),
+					# TODO DDL 默认时间设置问题
+					duration = int(data_json.get('duration', 0)),
+					random_order = data_json.get('random_order', False),
+					select_less_score = data_json.get('select_less_score', False),
+					certification = data_json['certification'],
+					show_number = data_json.get('show_number', True),
+					questions = data_json['questions']
+			)
+		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': res[0], 'hash': res[1]})
+
+		'''
 		if data_json.get('title', -1) != -1 and data_json.get('description', -1) != -1 \
 			and data_json.get('type', -1) != -1 and data_json.get('limit_time', -1) != -1 \
 			and data_json.get('questions', -1) != -1 :
@@ -80,11 +98,9 @@ def create(request):
 				if (x.get('type') in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) == -1) \
 					or (x.get('type') not in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) != -1):
 					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-			res = build_questionnaire(data_json['title'], data_json['description'], int(data_json['type']), 
-				int(data_json['limit_time']), datetime.datetime.now(), username, data_json['questions'])
-			return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': res[0], 'hash': res[1]})
 		else:
 			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
+		'''
 
 @csrf_exempt
 def list(request):
@@ -114,13 +130,6 @@ def list(request):
 			result['questionnaires'].append(d)
 		return JsonResponse(result)
 
-
-def hash(id):
-	q = Questionnaire.objects.get(id = id)
-	q.hash = ''.join(random.sample(string.ascii_letters + string.digits, 8))
-	q.save()
-	return q.hash
-
 @csrf_exempt
 def reset_hash(request):
 	if request.method == 'POST':
@@ -144,8 +153,8 @@ def delete(request):
 		q = Info.objects.get(id = id)
 		if q.status == DELETED:
 			questionnaire = Questionnaire.objects.get(id = q.id)
-			# TODO : clear the information about this questionnaire
 			delete_question(id)
+			delete_result(id)
 			questionnaire.delete()
 			q.delete()
 			return JsonResponse({'result': ACCEPT, 'message':r'已彻底删除该问卷!'})
@@ -328,6 +337,19 @@ def search_questionnaires(request):
 		return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 
 @csrf_exempt
+def check_type(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		hash = data_json['hash']
+		if Questionnaire.objects.filter(hash = hash).exists() == False:
+			return JsonResponse({'result': ERROR, 'message': r'问卷不存在!'})
+		else:
+			q = Questionnaire.objects.get(hash = hash)
+			if check_close(q) == 1:
+				return JsonResponse({'result': ERROR, 'message':r'问卷已关闭!'})
+			return JsonResponse({'result': ACCEPT, 'message': r'获取成功!', 'requirement': int(hash[-1])})
+
+@csrf_exempt
 def view(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
@@ -362,9 +384,13 @@ def fill(request):
 			return JsonResponse({'result': ERROR, 'message': r'问卷不存在!'})
 		q = Questionnaire.objects.get(hash = hash)
 		info = Info.objects.get(id = q.id)
+		check_close(q)
 		if info.status != RELEASE:
-			return JsonResponse({'result': ERROR, 'message': r'问卷已关闭!'})
-		
+			return JsonResponse({'result': ERROR, 'message': r'问卷未发布!'})
+		# TODO more information
+		# Exam
+		# Vote
+		# Sign
 		result = {'qid':q.id, 'title':q.title, 'description':q.description, 'type':q.type}
 		result['questions'] = get_questions(q.id)
 		result['result'] = ACCEPT
@@ -473,7 +499,7 @@ def download(request):
 					s = s + options[j]
 					paragraph = document.add_paragraph(s)
 				paragraph = document.add_paragraph("\n")
-			else:
+			elif x.type in [COMPLETION, DESCRIPTION]:
 				if x.type == COMPLETION:
 					s = str(count) + r".(填空) "
 				else:
@@ -484,6 +510,15 @@ def download(request):
 					paragraph = document.add_paragraph(r'___________________')
 					paragraph = document.add_paragraph(r'___________________')
 				paragraph = document.add_paragraph("\n")
+			elif x.type == GRADING:
+				s = str(count) + r".(打分) "
+				# TODO add more detail
+				paragraph = document.add_paragraph(s + x.content)
+				paragraph = document.add_paragraph(r'___________________')
+			else:
+				s = str(count) + r".(定位) "
+				paragraph = document.add_paragraph(s + x.content)
+				paragraph = document.add_paragraph(r'___________________')
 			count += 1
 		
 		document.save('img/' + name + '.docx')

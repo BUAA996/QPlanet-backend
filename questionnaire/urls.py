@@ -17,4 +17,5 @@ urlpatterns = [
 	path('getqr/', get_qr),
 	path('download/', download),
 	path('fill/', fill),
+	path('check_type', check_type),
 ]
