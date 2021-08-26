@@ -32,13 +32,10 @@ def register(request):
 		# if pattern.search(email) == None:
 		# 	 return JsonResponse({'result': ERROR, 'message': r'邮箱格式错误!'})
 		# pattern = re.compile(r'^[0-9a-zA-Z]{6,16}$')
-		# if pattern.search(password1) == None:
-		# 	 return JsonResponse({'result': ERROR, 'message': r'密码格式错误!'})
-		print(password1)
-		print(password2)
 		if password1 != password2:
 			return JsonResponse({'result': ERROR, 'message': r'密码不匹配!'})
-		
+		if len(password1)<6 or len(password1)>16:
+		 	return JsonResponse({'result': ERROR, 'message': r'密码长度不正确!'})
 		if check_code(code) == False:
 			return JsonResponse({'result': ERROR, 'message': r'验证码不存在!'})
 		

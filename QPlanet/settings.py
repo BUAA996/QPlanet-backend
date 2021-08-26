@@ -197,6 +197,8 @@ EMAIL_HOST_USER = YAMLINFO['emailuser']			# 账号
 EMAIL_HOST_PASSWORD = YAMLINFO['emailpassword']	# 密码 (注意：这里的密码指的是授权码)
 EMAIL_USE_TLS = False							# 一般都为False
 EMAIL_FROM = YAMLINFO['emailuser']				# 邮箱来自
+KEY_ID = YAMLINFO['key_id']						# 短信验证码 access-key-id
+KEY_SECRET = YAMLINFO['key_secret']				# 短信验证码 access-key-secret
 
 if platform.system() == "Windows":
 	IMG_URL = "127.0.0.1:8000/"
