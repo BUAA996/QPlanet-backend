@@ -44,8 +44,8 @@ def save_questions(questions, qid):
             if question.get('standard_answer', -1) != -1:
                 tmp = question.get('standard_answer')
                 question_id = Question.objects.filter(questionnaire_id = qid, rank = num)
-                standard_answer = StandardAnswer.objects.create(qid = question_id, type = x['type'], score = tmp['score'],
-                                content = answer_to_string(tmp['content']))
+                StandardAnswer.objects.create(qid = question_id, type = x['type'], score = tmp['score'],
+                    content = answer_to_string(tmp['content']))
             num += 1
 
 def delete_question(qid):
