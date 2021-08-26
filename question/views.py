@@ -49,8 +49,10 @@ def save_questions(questions, qid):
             num += 1
 
 def delete_questions(qid):
+    questions = Question.objects.filter(questionnaire_id = qid)
+    for question in questions:
+        StandardAnswer.objects.filter(qid = question.id).delete()
     Question.objects.filter(questionnaire_id = qid).delete()
-    StandardAnswer.objects.filter(qid =qid).delete()
 
 def get_questions(qid):
     questions = [x for x in Question.objects.filter(questionnaire_id = qid)]
