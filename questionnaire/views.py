@@ -26,17 +26,6 @@ from random import randint as rand
 def datetime_to_str(time):
 	return time.strftime('%Y-%m-%d %H:%M')
 
-def check_close(q):
-	#TODO calculate the res
-	info = Info.objects.get(id = q.id)
-	if info.state != RELEASE:
-		return 0
-	if datetime.now() < q.deadline:
-		return 0
-	info.state = CLOSED
-	info.save()
-	return 1
-
 def hash(id):
 	q = Questionnaire.objects.get(id = id)
 	q.hash = ''.join(random.sample(string.ascii_letters + string.digits, 7)) + str(q.type)
@@ -206,7 +195,7 @@ def close(request):
 		info.save()
 
 		return JsonResponse({'result': ACCEPT, 'message': r'已停止发布!'})
-
+'''
 @csrf_exempt
 def get_sorted_questionnaires(request):
 	if request.method == 'POST':
@@ -291,7 +280,7 @@ def get_sorted_questionnaires(request):
 						'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 					res_tmp.append(d)
 				return JsonResponse({'result': ACCEPT, 'message': res_tmp})
-
+'''
 @csrf_exempt
 def search_questionnaires(request):
 	if request.method == 'POST':
@@ -312,19 +301,30 @@ def search_questionnaires(request):
 			l.extend([x for x in Questionnaire.objects.filter(Q(own = username) & Q(id = int(q)))])
 		l.sort(key = lambda x: x.id)
 		for x in l:
+			check_close(x)
 			info = Info.objects.get(id = x.id)
-			d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-				'count':x.count, 'hash':x.hash, 'state':info.state,
-				'create_time':x.create_time[:16], 'upload_time':info.upload_time}
-			dt_time = datetime.datetime.strptime(x.create_time[:19], '%Y-%m-%d %H:%M:%S')
+			d = {'id': x.id, 'title': x.title, 'description': x.description, 'type': x.type,
+				'count': x.count, 'hash': x.hash, 'state': info.state, 'quota': x.quota, 
+				'create_time': datetime_to_str(x.create_time), 
+				'upload_time': datetime_to_str(info.upload_time)
+			}
+			dt_time = x.create_time.strftime('%Y-%m-%d %H:%M:%S')
 			d['create_time_int'] = int(dt_time.timestamp())
-			d['upload_time_int'] = 0
-			if info.upload_time != "":
-				dt_time = datetime.datetime.strptime(info.upload_time[:19], '%Y-%m-%d %H:%M:%S')
-				d['upload_time_int'] = int(dt_time.timestamp())
-				d['upload_time'] = d['upload_time'][:16]
+			dt_time = x.upload_time.strftime('%Y-%m-%d %H:%M:%S')
+			d['upload_time_int'] = int(dt_time.timestamp())
 			res_tmp.append(d)
 		return JsonResponse({'result': ACCEPT, 'message': res_tmp})
+
+def check_close(q):
+	#TODO calculate the res
+	info = Info.objects.get(id = q.id)
+	if info.state != RELEASE:
+		return 0
+	if datetime.now() < q.deadline:
+		return 0
+	info.state = CLOSED
+	info.save()
+	return 1
 
 @csrf_exempt
 def check_type(request):
@@ -359,11 +359,9 @@ def view(request):
 		# 	 return JsonResponse({'result': ERROR, 'message': r'问卷已关闭!'})
 		info = Info.objects.get(id = q.id)
 		
-		result = {'qid':q.id, 'title':q.title, 'description':q.description,
-					'type':q.type, 'show_number': q.show_number}
-		result['questions'] = get_questions(q.id)
-		result['result'] = ACCEPT
-		result['message'] = r'获取成功!'
+		result = {'result': ACCEPT, 'message': r'获取成功!', 'qid':q.id, 'title':q.title, 
+				'description':q.description, 'type': q.type, 'show_number': q.show_number}
+		result['questions'] = get_questions(q.id) 
 		return JsonResponse(result)
 
 @csrf_exempt
