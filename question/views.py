@@ -4,8 +4,6 @@ from question.models import *
 from django.views.decorators.csrf import csrf_exempt
 from QPlanet.values import *
 from QPlanet.settings import *
-#from questionnaire.views import *
-# Create your views here.
 
 def list_to_string(option, quota):
     return SEPARATOR.join(option + list(map(str, quota)))
@@ -54,31 +52,33 @@ def delete_questions(qid):
         StandardAnswer.objects.filter(qid = question.id).delete()
     Question.objects.filter(questionnaire_id = qid).delete()
 
-def get_questions(qid):
+def get_questions(qid, with_id):
     questions = [x for x in Question.objects.filter(questionnaire_id = qid)]
     questions.sort(key = lambda x: x.rank)
     tmp = []
     for x in questions:
-        if x.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]: 
-            d = {'id':x.id, 'type':x.type, 'content':x.content, 'option':string_to_list(x.option),
-                'is_required':x.is_required, 'description':x.description }
-        else:
-            d = {'id':x.id, 'type':x.type, 'content':x.content, 'is_required':x.is_required,
-                'description':x.description }
-        tmp.append(d)
-    return tmp
-
-def get_questions_without_id(qid):
-    questions = [x for x in Question.objects.filter(questionnaire_id = qid)]
-    questions.sort(key = lambda x: x.rank)
-    tmp = []
-    for x in questions:
-        if x.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]: 
-            d = {'type':x.type, 'content':x.content, 'option':string_to_list(x.option),
-                'is_required':x.is_required, 'description':x.description }
-        else:
-            d = {'type':x.type, 'content':x.content, 'is_required':x.is_required,
-                'description':x.description }
+        d = {'type': x.type, 'content': x.content, 'is_required': x.is_required, 
+            'description': x.description}
+        if with_id:
+            d['id'] = x.id
+        if x.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+            res = string_to_list(x.extra)
+            d['option'] = res[0]
+            d['quota'] = res[1]
+            d['lower'] = -1
+            d['upper'] = -1
+            d['requirement'] = -1
+        elif x.type in [COMPLETION, DESCRIPTION]:
+            res = string_to_int(x.extra)
+            d['option'] = []
+            d['quota'] = []
+            d['lower'] = res[0]
+            d['upper'] = res[1]
+            d['requirement'] = res[2]
+        if StandardAnswer.objects.filter(qid = x.id).exists():
+            standard_answer = StandardAnswer.objects.filter(qid = x.id)
+            d['standard_answer'] = {'content': string_to_answer(standard_answer.content), 
+                'score': standard_answer.score}
         tmp.append(d)
     return tmp
 
