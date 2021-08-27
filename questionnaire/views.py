@@ -113,7 +113,7 @@ def list(request):
 			check_close(x)
 			info = Info.objects.get(id = x.id)
 			d = {'id': x.id, 'title': x.title, 'description': x.description, 'type': x.type,
-				'count': x.count, 'hash': x.hash, 'state': info.state, 
+				'count': x.count, 'hash': x.hash, 'state': info.state, 'quota': x.quota, 
 				'create_time': datetime_to_str(x.create_time), 
 				'upload_time': datetime_to_str(info.upload_time)
 			}
@@ -178,15 +178,14 @@ def release(request):
 
 		info = Info.objects.get(id = id)
 		info.state = RELEASE
-		info.upload_time = str(datetime.datetime.now())
 		info.save()
 
 		_hash = hash(id)
 		url = IMG_URL + _hash
-		pic=qrcode.make(url)
+		pic = qrcode.make(url)
 		with open("img/"+_hash +".png","wb") as f:
 			pic.save(f)
-		return JsonResponse({'result': ACCEPT, 'message':r'发布成功!', 'url':url, 'img':IMG_URL + 'img/' + _hash + '.png'})
+		return JsonResponse({'result': ACCEPT, 'message': r'发布成功!', 'url': url, 'img': IMG_URL + 'img/' + _hash + '.png'})
 
 @csrf_exempt
 def get_qr(request):
