@@ -14,7 +14,7 @@ class Question(models.Model):
 	extra = models.TextField()
 
 class StandardAnswer(models.Model):
-	qid = models.IntegerField()
+	qid = models.IntegerField()  #  question id
 	type = models.IntegerField()
 	content = models.TextField()
 	score = models.IntegerField()

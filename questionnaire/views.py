@@ -27,11 +27,11 @@ from random import randint as rand
 def check_close(q):
 	#TODO calculate the res
 	info = Info.objects.get(id = q.id)
-	if info.status != RELEASE:
+	if info.state != RELEASE:
 		return 0
 	if datetime.datetime.now() < q.deadline:
 		return 0
-	info.status = CLOSED
+	info.state = CLOSED
 	info.save()
 	return 1
 
@@ -58,9 +58,9 @@ def build_questionnaire(title, description, own, type, deadline, duration, rando
 	questionnaire.hash = hash(total)
 	questionnaire.save()
 
-	save_questions(questions, questionnaire.id)
+	save_questions(questions, questionnaire.id, type)
 
-	info = Info(id = total, status = SAVED, upload_time = "")
+	info = Info(id = total, state = SAVED, upload_time = "")
 	info.save()
 	return [questionnaire.id, questionnaire.hash]
 
@@ -118,7 +118,7 @@ def list(request):
 			check_close(x)
 			info = Info.objects.get(id = x.id)
 			d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-				'count':x.count, 'hash':x.hash, 'status':info.status,
+				'count':x.count, 'hash':x.hash, 'state':info.state,
 				'create_time':x.create_time[:16], 'upload_time':info.upload_time, 
 			}
 			dt_time = datetime.datetime.strptime(x.create_time[:19], '%Y-%m-%d %H:%M:%S')
@@ -152,15 +152,15 @@ def delete(request):
 		data_json = json.loads(request.body)
 		id = int(data_json['id'])
 		q = Info.objects.get(id = id)
-		if q.status == DELETED:
+		if q.state == DELETED:
 			questionnaire = Questionnaire.objects.get(id = q.id)
-			delete_question(id)
+			delete_questions(id)
 			delete_result(id)
 			questionnaire.delete()
 			q.delete()
 			return JsonResponse({'result': ACCEPT, 'message':r'已彻底删除该问卷!'})
 		else:
-			q.status = DELETED
+			q.state = DELETED
 			q.save()
 			return JsonResponse({'result': ACCEPT, 'message':r'已将该问卷移动至回收站!'})
 
@@ -173,7 +173,7 @@ def recover(request):
 		data_json = json.loads(request.body)
 		id = int(data_json['id'])
 		q = Info.objects.get(id = id)
-		q.status = SAVED
+		q.state = SAVED
 		q.save()
 		return JsonResponse({'result': ACCEPT, 'message':r'已恢复!'})
 
@@ -184,7 +184,7 @@ def release(request):
 		id = int(data_json['id'])
 
 		info = Info.objects.get(id = id)
-		info.status = RELEASE
+		info.state = RELEASE
 		info.upload_time = str(datetime.datetime.now())
 		info.save()
 
@@ -210,7 +210,7 @@ def close(request):
 		id = int(data_json['id'])
 
 		info = Info.objects.get(id = id)
-		info.status = SAVED
+		info.state = SAVED
 		info.upload_time = ""
 		info.save()
 
@@ -230,10 +230,10 @@ def get_sorted_questionnaires(request):
 			l.sort(key = lambda x: x.id)
 			for x in l:
 				info = Info.objects.get(id = x.id)
-				if info.status == DELETED:
+				if info.state == DELETED:
 					continue
 				d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-					'count':x.count, 'hash':x.hash, 'status':info.status,
+					'count':x.count, 'hash':x.hash, 'state':info.state,
 					'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 				res_tmp.append(d)
 			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
@@ -241,10 +241,10 @@ def get_sorted_questionnaires(request):
 			l.sort(key = lambda x: x.id, reverse = True)
 			for x in l:
 				info = Info.objects.get(id = x.id)
-				if info.status == DELETED:
+				if info.state == DELETED:
 					continue
 				d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-					'count':x.count, 'hash':x.hash, 'status':info.status,
+					'count':x.count, 'hash':x.hash, 'state':info.state,
 					'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 				res_tmp.append(d)
 			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
@@ -256,11 +256,11 @@ def get_sorted_questionnaires(request):
 			tmp_list.sort(key = lambda x: x.upload_time)
 			for x in tmp_list:
 				questionnaire = Questionnaire.objects.get(id = x.id)
-				if x.status == DELETED:
+				if x.state == DELETED:
 					continue
 				d = {'id':x.id, 'title':questionnaire.title, 'description':questionnaire.description, 
 					'type':questionnaire.type, 'count':questionnaire.count, 'hash':questionnaire.hash, 
-					'status':x.status, 'create_time':questionnaire.create_time[:16], 'upload_time':x.upload_time}
+					'state':x.state, 'create_time':questionnaire.create_time[:16], 'upload_time':x.upload_time}
 				res_tmp.append(d)
 			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 		elif sort_method == 'upload_time_descend': # 发布时间降序
@@ -271,21 +271,21 @@ def get_sorted_questionnaires(request):
 			tmp_list.sort(key = lambda x: x.upload_time, reverse = True)
 			for x in tmp_list:
 				questionnaire = Questionnaire.objects.get(id = x.id)
-				if x.status == DELETED:
+				if x.state == DELETED:
 					continue
 				d = {'id':x.id, 'title':questionnaire.title, 'description':questionnaire.description, 
 					'type':questionnaire.type, 'count':questionnaire.count, 'hash':questionnaire.hash, 
-					'status':x.status, 'create_time':questionnaire.create_time[:16], 'upload_time':x.upload_time}
+					'state':x.state, 'create_time':questionnaire.create_time[:16], 'upload_time':x.upload_time}
 				res_tmp.append(d)
 			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 		elif sort_method == 'count_ascend': # 回收量升序
 			l.sort(key = lambda x: x.count)
 			for x in l:
 				info = Info.objects.get(id = x.id)
-				if info.status == DELETED:
+				if info.state == DELETED:
 					continue
 				d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-					'count':x.count, 'hash':x.hash, 'status':info.status,
+					'count':x.count, 'hash':x.hash, 'state':info.state,
 					'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 				res_tmp.append(d)
 			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
@@ -293,10 +293,10 @@ def get_sorted_questionnaires(request):
 				l.sort(key = lambda x: x.count, reverse = True)
 				for x in l:
 					info = Info.objects.get(id = x.id)
-					if info.status == DELETED:
+					if info.state == DELETED:
 						continue
 					d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-						'count':x.count, 'hash':x.hash, 'status':info.status,
+						'count':x.count, 'hash':x.hash, 'state':info.state,
 						'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 					res_tmp.append(d)
 				return JsonResponse({'result': ACCEPT, 'message': res_tmp})
@@ -322,10 +322,8 @@ def search_questionnaires(request):
 		l.sort(key = lambda x: x.id)
 		for x in l:
 			info = Info.objects.get(id = x.id)
-			#if info.status == DELETED:
-			#	continue
 			d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-				'count':x.count, 'hash':x.hash, 'status':info.status,
+				'count':x.count, 'hash':x.hash, 'state':info.state,
 				'create_time':x.create_time[:16], 'upload_time':info.upload_time}
 			dt_time = datetime.datetime.strptime(x.create_time[:19], '%Y-%m-%d %H:%M:%S')
 			d['create_time_int'] = int(dt_time.timestamp())
@@ -387,7 +385,7 @@ def fill(request):
 		q = Questionnaire.objects.get(hash = hash)
 		info = Info.objects.get(id = q.id)
 		check_close(q)
-		if info.status != RELEASE:
+		if info.state != RELEASE:
 			return JsonResponse({'result': ERROR, 'message': r'问卷未发布!'})
 		# TODO more information
 		# Vote
@@ -438,19 +436,19 @@ def modify_questionnaire(request):
 		limit_time = data_json['limit_time']
 		questions = data_json['questions']
 		
-		q.status = SAVED
+		q.state = SAVED
 		q.title = title
 		q.description = description
 		q.validity = validity
 		q.limit_time = limit_time
 		q.save()
 		
-		# 方式一：保留答卷
+		# 方式一：保留答卷；不能加题不能删题不能转换题目类型，可以移动题目不能移动选项，非考试类型可以加选项
 		if modify_type == 'reserve_results':
-			update_questions(questions)
-		# 方式二：删除所有答卷（题目删掉重写）
+			update_questions(questions) # TODO
+		# 方式二：删除所有答卷（题目删掉重写）；
 		elif modify_type == 'delete_all_results':
-			delete_question(qid)
+			delete_questions(qid)
 			save_questions(questions, qid)
 			q.count = 0
 			q.save()
@@ -461,7 +459,7 @@ def modify_questionnaire(request):
 
 def copy_questionnaire(qid, title, to_username):
 	q = Questionnaire.objects.get(id = qid)
-	questions = get_questions_without_id(qid = qid)
+	questions = get_questions(qid, False)
 	res = build_questionnaire(title, q.description, q.type, q.limit_time, q.validity, to_username, questions)
 	return res
 
