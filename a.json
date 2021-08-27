@@ -1,0 +1,60 @@
+{
+	"title": "123",
+	"description": "感谢您能抽时间参与本次问卷，您的意见和建议就是我们前行的动力！",
+	  "deadline": "2214-01-08 11:59",
+	"duration": 120,
+	"type": 1,
+	"random_order": true,
+	"certification": 1,
+	"select_less_score": true,
+	"show_number": true,
+	"questions": [
+		{
+			"type": 0,
+			"content": "What would you like to drink?",
+			"is_required": true,
+			"option": ["Cola", "Sprite", "Lemonade"],
+			"quota": [0, 0, 0],
+			"description": ""
+		},
+		{
+			"type": 1,
+			"content": "What would you like to drink?",
+			"is_required": true,
+			"option": ["Cola", "Sprite", "Lemonade"],
+			 "quota": [0, 0, 0],
+			"description": "hi"
+		},
+		{
+			"type": 2,
+			"content": "How are you today?",
+			"is_required": false,
+			"description": "bye",
+			"lower": 0,
+			"upper": 10,
+			"requirement": 0
+		},
+		{
+			"type": 3,
+			"content": "How are you today?",
+			"is_required": false,
+			"description": "bye",
+			"lower": 0,
+			"upper": 50,
+			"requirement": 0
+		},
+		{
+			"type": 4,
+			"content": "How are you today?",
+			"is_required": false,
+			"description": "bye",
+			"upper": 5
+		},
+		{
+			"type": 5,
+			"content": "How are you today?",
+			"is_required": false,
+			"description": "bye"
+		}
+	]
+}
