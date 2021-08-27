@@ -52,7 +52,7 @@ def delete_questions(qid):
         StandardAnswer.objects.filter(qid = question.id).delete()
     Question.objects.filter(questionnaire_id = qid).delete()
 
-def get_questions(qid, with_id):
+def get_questions(qid, with_id = True):
     questions = [x for x in Question.objects.filter(questionnaire_id = qid)]
     questions.sort(key = lambda x: x.rank)
     tmp = []

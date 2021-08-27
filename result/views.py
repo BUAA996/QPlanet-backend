@@ -80,7 +80,7 @@ def submit(request):
 		for i in results:
 			submit = Submit(sid = total, problem_id = int(i['problem_id']), type = int(i['type']), answer = "")
 			if i['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
-				ans = list_to_string(i['answer'])
+				ans = answer_to_string(i['answer'])
 			else:
 				ans = i['answer'][0]
 			submit.answer = ans
@@ -95,9 +95,10 @@ def submit(request):
 				if question.is_essential == True:
 					continue
 				if i['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
-					ans = list_to_string(i['answer'])
+					ans = i['answer']
 					stand = StandardAnswer.objects.get(i['problem_id'])
-					std_ans.append({'problem_id': i['problem_id'], 'ans': ans.sort(), 'type':question.type})
+					std_ans.append({'problem_id': i['problem_id'], 'ans': string_to_answer(stand.content),
+							'type':question.type})
 					# 预处理与标准答案
 
 					if i['type'] == SINGLE_CHOICE:
@@ -106,7 +107,7 @@ def submit(request):
 						# 单选得分
 					else:
 						ans.sort()
-						std = string_to_list(stand.content)
+						std = string_to_answer(stand.content)
 						if ans == std:
 							score += stand.score
 						elif q.select_less_score == True:
@@ -117,7 +118,7 @@ def submit(request):
 				else:
 					ans = i['answer'][0]
 					stand = StandardAnswer.objects.get(i['problem_id'])
-					std = string_to_list(stand.content)
+					std = string_to_answer(stand.content)
 					if ans in std:
 						score += stand.score
 					# 填空得分
@@ -136,8 +137,17 @@ def submit(request):
 			return JsonResponse(js)
 			# 反馈部分
 		elif q.type in [VOTING_AFTER, VOTING_BOTH]:
-			
-			pass
+			js = {'result': ACCEPT, 'message': r'提交成功!'}
+			for i in results:
+				question = Question.objects.get(id = i['problem_id'])
+				if question.is_essential == True:
+					continue
+				if question.type not in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+					continue
+				option,e = string_to_list(question.extra)
+				votes = [0]*len(option)
+				# TODO calculate votes
+			return JsonResponse(js)
 			# 投票
 		return JsonResponse({'result': ACCEPT, 'message': r'提交成功!'})
 
