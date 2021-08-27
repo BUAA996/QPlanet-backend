@@ -33,7 +33,15 @@ def get_total(request):
 		else:
 			total = int(total['id__max'])
 		total += 300
-		return JsonResponse({'result': ACCEPT, 'message':r'获取成功!', 'total':total})
+
+		s_total = SubmitInfo.objects.all().aggregate(Max('id'))
+		if s_total['id__max'] == None:
+			s_total = 1
+		else:
+			s_total = int(s_total['id__max'])
+		s_total += 300
+
+		return JsonResponse({'result': ACCEPT, 'message':r'获取成功!', 'total':total, 'submit_total':s_total})
 
 def check_close(q):
 	#TODO calculate the res
