@@ -458,7 +458,7 @@ def modify_questionnaire(request):
 			or (q.type == [6, 7, 8, 9] and data_json['type'] in [6, 7, 8, 9]):
 
 			if data_json['deadline'] == None:
-				temp = datetime.now() + timedelta(hours = 72)
+				temp = None
 			else:
 				temp = str_to_datetime(data_json['deadline'])
 			q.deadline = temp
