@@ -369,7 +369,7 @@ def fill(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
 		hash = data_json['hash']
-		if Questionnaire.objects.filter(hash=hash).exists() == False:
+		if Questionnaire.objects.filter(hash = hash).exists() == False:
 			return JsonResponse({'result': ERROR, 'message': r'问卷不存在!'})
 		q = Questionnaire.objects.get(hash = hash)
 		info = Info.objects.get(id = q.id)
@@ -379,7 +379,7 @@ def fill(request):
 		# TODO more information
 		# Vote
 		# Sign
-		result = {'qid':q.id, 'title':q.title, 'description':q.description, 'type':q.type}
+		result = {'result': ACCEPT, 'message': r'获取成功!', 'qid': q.id, 'title': q.title, 'description': q.description, 'type': q.type}
 		result['questions'] = get_questions(q.id)
 		if q.random_order == True:
 			a = result['questions']
@@ -393,8 +393,6 @@ def fill(request):
 					continue
 				a[x],a[y] = a[y],a[x]
 			result['questions'] = a
-		result['result'] = ACCEPT
-		result['message'] = r'获取成功!'
 		return JsonResponse(result)
 
 @csrf_exempt
