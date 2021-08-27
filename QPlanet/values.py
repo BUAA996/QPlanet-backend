@@ -38,3 +38,6 @@ NO_REQUIREMENT = 0		# 无检测
 PHONE_NUM = 1			# 手机号检测
 EMAIL_ADRESS = 2		# 邮箱检测
 NUMBER_ONLY = 3			# 纯数字检测
+
+RESERVE_RESULTS = 0	
+DELETE_RESULTS = 1

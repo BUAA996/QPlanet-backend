@@ -26,6 +26,9 @@ from random import randint as rand
 def datetime_to_str(time):
 	return time.strftime('%Y-%m-%d %H:%M')
 
+def str_to_datetime(str):
+	return datetime.strptime(str, '%Y-%m-%d %H:%M')
+
 def hash(id):
 	q = Questionnaire.objects.get(id = id)
 	q.hash = ''.join(random.sample(string.ascii_letters + string.digits, 7)) + str(q.type)
@@ -40,9 +43,10 @@ def build_questionnaire(title, description, own, type, deadline, duration, rando
 		total = int(total['id__max']) + 1
 		
 	questionnaire = Questionnaire.objects.create(
-		id = total, title = title, description = description, own = own, type = type, deadline = deadline, 
-		duration = duration, count = 0, hash = hash(total), random_order = random_order, 
-		select_less_score = select_less_score, certification = certification, show_number = show_number)
+		id = total, title = title, description = description, own = own, type = type, 
+		deadline = str_to_datetime(deadline), duration = duration, count = 0, hash = hash(total), 
+		random_order = random_order, select_less_score = select_less_score, 
+		certification = certification, show_number = show_number)
 
 	save_questions(questions, questionnaire.id)
 	Info.objects.create(id = total, state = SAVED)
@@ -57,11 +61,15 @@ def create(request):
 		data_json = json.loads(request.body)
 		username = request.session.get('user')
 
+		if data_json.get('deadline', -1) == -1:
+			temp = datetime.now() + timedelta(hours = 72)
+		else:
+			temp = str_to_datetime(data_json['deadline'])
 		res = build_questionnaire(title = data_json['title'],
 					description = data_json['description'],
 					own = username,
 					type = int(data_json['type']),
-					deadline = data_json.get('deadline', datetime.now() + timedelta(hours = 72)),
+					deadline = temp,
 					# TODO DDL 默认时间设置问题
 					duration = int(data_json.get('duration', 0)),
 					random_order = data_json.get('random_order', False),
@@ -400,41 +408,32 @@ def modify_questionnaire(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
 		
-		if data_json.get('title', -1) != -1 and data_json.get('description', -1) != -1 \
-			and data_json.get('modify_type', -1) != -1 and data_json.get('limit_time', -1) != -1 \
-			and data_json.get('questions', -1) != -1 and data_json.get('qid', -1) != -1:
-			for x in data_json['questions']:
-				# 新题目 id ？
-				if x.get('id', -1) == -1 or x.get('content', -1) == -1 or x.get('is_required', -1) == -1 \
-					or x.get('description', -1) == -1:
-					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-				if (x.get('type') in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) == -1) \
-					or (x.get('type') not in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) != -1):
-					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-		else:
+		if data_json.get('modify_type', -1) == -1 or data_json.get('qid', -1) == -1 \
+			or data_json.get('title', -1) == -1 or data_json.get('description', -1) == -1 \
+			or data_json.get('deadline', -1) == -1 or data_json.get('duration', -1) == -1 \
+			or data_json.get('random_order', -1) == -1 or data_json.get('certification', -1) == -1 \
+			or data_json.get('show_number', -1) == -1 or data_json.get('questions', -1) == -1:
 			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-		
+
 		modify_type = data_json['modify_type']
 		qid = data_json['qid']
 		q = Questionnaire.objects.get(id = qid)
-		title = data_json['title']
-		description = data_json['description']
-		validity = data_json['validity']
-		limit_time = data_json['limit_time']
-		questions = data_json['questions']
-		
+		q.title = data_json['title']
+		q.description = data_json['description']
+		q.deadline = str_to_datetime(data_json['deadline'])
+		q.duration = data_json['limit_time']
+		q.random_order = data_json['random_order']
+		q.certification = data_json['certification']
+		q.show_number = data_json['show_number']
 		q.state = SAVED
-		q.title = title
-		q.description = description
-		q.validity = validity
-		q.limit_time = limit_time
 		q.save()
-		
+		questions = data_json['questions']
+
 		# 方式一：保留答卷；不能加题不能删题不能转换题目类型，可以移动题目不能移动选项，非考试类型可以加选项
-		if modify_type == 'reserve_results':
-			update_questions(questions) # TODO
-		# 方式二：删除所有答卷（题目删掉重写）；
-		elif modify_type == 'delete_all_results':
+		if modify_type == RESERVE_RESULTS:
+			update_questions(questions)
+		# 方式二：删除所有答卷（题目删掉重写）
+		elif modify_type == DELETE_RESULTS:
 			delete_questions(qid)
 			save_questions(questions, qid)
 			q.count = 0
