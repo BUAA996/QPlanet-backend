@@ -465,10 +465,15 @@ def modify_questionnaire(request):
 		if (q.type == 0 and data_json['type'] == 0) or (q.type == 5 and data_json['type'] == 5) \
 			or (q.type in [1, 2, 3, 4] and data_json['type'] in [1, 2, 3, 4]) \
 			or (q.type == [6, 7, 8, 9] and data_json['type'] in [6, 7, 8, 9]):
+
+			if data_json['deadline'] == None:
+				temp = datetime.now() + timedelta(hours = 72)
+			else:
+				temp = str_to_datetime(data_json['deadline'])
+			q.deadline = temp
 			q.type = data_json['type']
 			q.title = data_json['title']
 			q.description = data_json['description']
-			q.deadline = str_to_datetime(data_json['deadline'])
 			q.duration = data_json['limit_time']
 			q.random_order = data_json['random_order']
 			q.certification = data_json['certification']
