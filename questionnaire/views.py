@@ -110,7 +110,8 @@ def create(request):
 			)
 
 		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': id, 'hash': hash})
-
+	else:
+		print('IP is', request.META.get('HTTP_X_REAL_IP'))
 		'''
 		if data_json.get('title', -1) != -1 and data_json.get('description', -1) != -1 \
 			and data_json.get('type', -1) != -1 and data_json.get('limit_time', -1) != -1 \
@@ -361,7 +362,7 @@ def check_close(q):
 		return 0
 	if datetime.now() < q.deadline:
 		return 0
-	info.state = CLOSED
+	info.state = SAVED
 	info.save()
 	return 1
 

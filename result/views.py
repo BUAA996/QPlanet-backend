@@ -221,7 +221,8 @@ def analyze(request):
 		for q in questions:
 			if q.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
 				op,fk = string_to_list(q.extra)
-				result['questions'].append({'content': q.content,
+				result['questions'].append({'id': q.id,
+											'content': q.content,
 											'type': q.type, 
 											'option': op,
 											'count':[0]*len(op)})
@@ -248,6 +249,34 @@ def analyze(request):
 						result['questions'][i]['count'][op] +=1
 		return JsonResponse(result)
 
+@csrf_exempt
+def cross_analyze(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		qid = int(data_json('qid'))
+		t1 = int(data_json('t1'))
+		t2 = int(data_json('t2'))
+		q1 = Question.objects.get(id = t1)
+		q2 = Question.objects.get(id = t2)
+		option,quota = string_to_list(q1.extra)
+		len1 = len(option)
+		option,quota = string_to_list(q2.extra)
+		len2 = len(option)
+		count = [[0 for i in range(len2)] for i in range(len1)]
+		submitinfo = [x for x in SubmitInfo.objects.filter(qid = qid)]
+		total = len(submitinfo)
+
+		for x in submitinfo:
+			s1 = Submit.objects.get(sid = x.id, problem_id = q1.id)
+			s2 = Submit.objects.get(sid = x.id, problem_id = q2.id)
+			ans1 = string_to_answer(s1.answer)
+			ans2 = string_to_answer(s2.answer)
+			for i in ans1:
+				for j in ans2:
+					count[ans1[i]][ans2[j]] += 1
+		js = {'result': ACCEPT, 'message': r'成功!'}
+		js['total'] = total
+		js['count'] = count
 		# Some calculations
 		'''
 		{
