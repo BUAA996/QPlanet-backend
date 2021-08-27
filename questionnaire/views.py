@@ -203,10 +203,9 @@ def close(request):
 
 		info = Info.objects.get(id = id)
 		info.state = SAVED
-		info.upload_time = ""
 		info.save()
 
-		return JsonResponse({'result': ACCEPT, 'message':r'已停止发布!'})
+		return JsonResponse({'result': ACCEPT, 'message': r'已停止发布!'})
 
 @csrf_exempt
 def get_sorted_questionnaires(request):
