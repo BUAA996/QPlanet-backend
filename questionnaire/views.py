@@ -442,36 +442,44 @@ def modify_questionnaire(request):
 			or data_json.get('title', -1) == -1 or data_json.get('description', -1) == -1 \
 			or data_json.get('deadline', -1) == -1 or data_json.get('duration', -1) == -1 \
 			or data_json.get('random_order', -1) == -1 or data_json.get('certification', -1) == -1 \
-			or data_json.get('show_number', -1) == -1 or data_json.get('questions', -1) == -1:
+			or data_json.get('show_number', -1) == -1 or data_json.get('questions', -1) == -1 \
+			or data_json.get('type', -1) == -1:
 			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
 
 		modify_type = data_json['modify_type']
 		qid = data_json['qid']
 		q = Questionnaire.objects.get(id = qid)
-		q.title = data_json['title']
-		q.description = data_json['description']
-		q.deadline = str_to_datetime(data_json['deadline'])
-		q.duration = data_json['limit_time']
-		q.random_order = data_json['random_order']
-		q.certification = data_json['certification']
-		q.show_number = data_json['show_number']
-		q.state = SAVED
-		q.save()
-		questions = data_json['questions']
 
-		# 方式一：保留答卷；不能加题不能删题不能转换题目类型，可以移动题目不能移动选项，非考试类型可以加选项
-		if modify_type == RESERVE_RESULTS:
-			update_questions(questions)
-		# 方式二：删除所有答卷（题目删掉重写）
-		elif modify_type == DELETE_RESULTS:
-			delete_questions(qid)
-			save_questions(questions, qid)
-			q.count = 0
+		if (q.type == 0 and data_json['type'] == 0) or (q.type == 5 and data_json['type'] == 5) \
+			or (q.type in [1, 2, 3, 4] and data_json['type'] in [1, 2, 3, 4]) \
+			or (q.type == [6, 7, 8, 9] and data_json['type'] in [6, 7, 8, 9]):
+			q.type = data_json['type']
+			q.title = data_json['title']
+			q.description = data_json['description']
+			q.deadline = str_to_datetime(data_json['deadline'])
+			q.duration = data_json['limit_time']
+			q.random_order = data_json['random_order']
+			q.certification = data_json['certification']
+			q.show_number = data_json['show_number']
+			q.state = SAVED
 			q.save()
-			delete_result(qid)
+			questions = data_json['questions']
+
+			# 方式一：保留答卷；不能加题不能删题不能转换题目类型，可以移动题目不能移动选项，非考试类型可以加选项
+			if modify_type == RESERVE_RESULTS:
+				update_questions(questions)
+			# 方式二：删除所有答卷（题目删掉重写）
+			elif modify_type == DELETE_RESULTS:
+				delete_questions(qid)
+				save_questions(questions, qid)
+				q.count = 0
+				q.save()
+				delete_result(qid)
+			else:
+				return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
+			return JsonResponse({'result': ACCEPT})
 		else:
-			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-		return JsonResponse({'result': ACCEPT})
+			return JsonResponse({'result': ERROR, 'message': r'问卷类型不可修改！'})
 
 def copy_questionnaire(qid, title, to_username):
 	q = Questionnaire.objects.get(id = qid)
