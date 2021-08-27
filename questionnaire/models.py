@@ -10,7 +10,7 @@ class Questionnaire(models.Model):
 	type = models.IntegerField()
 	
 	create_time = models.DateTimeField(auto_now_add = True, editable = False)
-	deadline = models.DateTimeField()
+	deadline = models.DateTimeField(null = True, blank = True)
 	duration = models.IntegerField()  #  考试时长
 
 	quota = models.IntegerField(null = True, blank = True)
