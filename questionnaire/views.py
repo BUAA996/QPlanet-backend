@@ -430,10 +430,10 @@ def modify_questionnaire(request):
 		q.limit_time = limit_time
 		q.save()
 		
-		# 方式一：保留答卷
+		# 方式一：保留答卷；不能加题不能删题不能转换题目类型，可以移动题目不能移动选项，非考试类型可以加选项
 		if modify_type == 'reserve_results':
-			update_questions(questions, type) # TODO
-		# 方式二：删除所有答卷（题目删掉重写）
+			update_questions(questions) # TODO
+		# 方式二：删除所有答卷（题目删掉重写）；
 		elif modify_type == 'delete_all_results':
 			delete_questions(qid)
 			save_questions(questions, qid)

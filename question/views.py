@@ -79,6 +79,8 @@ def get_questions(qid, with_id):
             standard_answer = StandardAnswer.objects.filter(qid = x.id)
             d['standard_answer'] = {'content': string_to_answer(standard_answer.content), 
                 'score': standard_answer.score}
+        else:
+            d['standard_answer'] = {'content': [], 'score': -1}
         tmp.append(d)
     return tmp
 
@@ -90,7 +92,9 @@ def update_questions(questions):
         question.is_required = x['is_required']
         question.description = x['description']
         question.rank = num
-        if type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
-            question.option = list_to_string(x['option'])
+        if question.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+            question.extra = list_to_string(x['option'], x['quota'])
+        elif type in [COMPLETION, DESCRIPTION]:
+            question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])
         question.save()
         num += 1
