@@ -24,6 +24,17 @@ from docx2pdf import convert
 from random import randint as rand
 # Create your views here.
 
+@csrf_exempt
+def get_total(request):
+	if request.method == 'POST':
+		total = Questionnaire.objects.all().aggregate(Max('id'))
+		if total['id__max'] == None:
+			total = 1
+		else:
+			total = int(total['id__max'])
+		total += 300
+		return JsonResponse({'result': ACCEPT, 'message':r'获取成功!', 'total':total})
+
 def check_close(q):
 	#TODO calculate the res
 	info = Info.objects.get(id = q.id)

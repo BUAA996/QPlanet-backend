@@ -132,3 +132,8 @@ def change_password(request):
 			user.password = password1
 			user.save()
 			return JsonResponse({'result': ACCEPT, 'message':r'修改成功!'})
+
+@csrf_exempt
+def get_ip(request):
+	ip = request.META.get('HTTP_X_REAL_IP')
+	return JsonResponse({'result': ACCEPT, 'message':r'获取成功!', 'ip':str(ip)})

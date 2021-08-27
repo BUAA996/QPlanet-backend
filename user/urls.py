@@ -10,4 +10,5 @@ urlpatterns = [
 	path('islogin/', is_login), 
 	path('info/', info),
 	path('change/', change_password),
+	path('ip/', get_ip),
 ]

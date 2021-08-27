@@ -18,4 +18,5 @@ urlpatterns = [
 	path('download/', download),
 	path('fill/', fill),
 	path('check_type', check_type),
+	path('get_total/', get_total),
 ]
