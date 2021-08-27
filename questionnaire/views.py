@@ -22,7 +22,6 @@ from docx.oxml.ns import qn
 from docx.shared import Pt,RGBColor
 from docx2pdf import convert
 from random import randint as rand
-# Create your views here.
 
 def check_close(q):
 	#TODO calculate the res
@@ -48,20 +47,14 @@ def build_questionnaire(title, description, own, type, deadline, duration, rando
 	else:
 		total = int(total['id__max']) + 1
 		
-	questionnaire = Questionnaire(
+	questionnaire = Questionnaire.objects.create(
 		id = total, title = title, description = description, own = own, type = type,
-		create_time = str(datetime.datetime.now()), deadline = deadline, duration = duration,
-		count = 0, hash = "", random_order = random_order, select_less_score = select_less_score,
-		certification = certification, show_number = show_number
-	)
-	questionnaire.save()
-	questionnaire.hash = hash(total)
-	questionnaire.save()
+		create_time = datetime.datetime.now(), deadline = deadline, duration = duration,
+		count = 0, hash = hash(total), random_order = random_order, select_less_score = select_less_score,
+		certification = certification, show_number = show_number)
 
-	save_questions(questions, questionnaire.id, type)
-
-	info = Info(id = total, state = SAVED, upload_time = "")
-	info.save()
+	save_questions(questions, questionnaire.id)
+	Info.objects.create(id = total, state = SAVED)
 	return [questionnaire.id, questionnaire.hash]
 
 @csrf_exempt
