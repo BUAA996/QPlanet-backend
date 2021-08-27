@@ -21,6 +21,7 @@ from docx import Document
 from docx.oxml.ns import qn
 from docx.shared import Pt,RGBColor
 from docx2pdf import convert
+from random import randint as rand
 # Create your views here.
 
 def check_close(q):
@@ -367,7 +368,8 @@ def view(request):
 		# 	 return JsonResponse({'result': ERROR, 'message': r'问卷已关闭!'})
 		info = Info.objects.get(id = q.id)
 		
-		result = {'qid':q.id, 'title':q.title, 'description':q.description, 'type':q.type}
+		result = {'qid':q.id, 'title':q.title, 'description':q.description,
+					'type':q.type, 'show_number': q.show_number}
 		result['questions'] = get_questions(q.id)
 		result['result'] = ACCEPT
 		result['message'] = r'获取成功!'
@@ -386,11 +388,22 @@ def fill(request):
 		if info.state != RELEASE:
 			return JsonResponse({'result': ERROR, 'message': r'问卷未发布!'})
 		# TODO more information
-		# Exam
 		# Vote
 		# Sign
 		result = {'qid':q.id, 'title':q.title, 'description':q.description, 'type':q.type}
 		result['questions'] = get_questions(q.id)
+		if q.random_order == True:
+			a = result['questions']
+			l = len(a)
+			# TODO set random seed
+			# random.seed(1)
+			for i in range(30):
+				x = rand(0, l-1)
+				y = rand(0, l-1)
+				if a[x].is_essential == True or a[y].is_essential == True:
+					continue
+				a[x],a[y] = a[y],a[x]
+			result['questions'] = a
 		result['result'] = ACCEPT
 		result['message'] = r'获取成功!'
 		return JsonResponse(result)

@@ -9,6 +9,7 @@ from question.models import *
 from questionnaire.models import *
 from question.views import *
 from .wordclound import *
+from .verify import *
 from django.http import FileResponse
 from django.http import HttpResponse
 import datetime
@@ -16,14 +17,52 @@ import json
 import xlrd
 import xlwt
 from six import BytesIO
+import re
 # Create your views here.
+
+@csrf_exempt
+def send_captcha(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		phone = str(data_json['phone'])
+		pattern = re.compile(r'^1(3\d|4[5-9]|5[0-35-9]|6[2567]|7[0-8]|8\d|9[0-35-9])\d{8}$')
+		if pattern.search(phone) == None:
+			return JsonResponse({'result': ERROR, 'message': r'手机号格式非法!'})
+		captcha = str(send_code(phone))
+		p = Phone(phone_number = phone, captcha = captcha)
+		p.save()
+		return JsonResponse({'result': ACCEPT, 'message': r'发送成功!'})
+
+@csrf_exempt
+def check_captcha(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		phone = str(data_json['phone'])
+		captcha = data_json['captcha']
+		if Phone.objects.filter(phone_number = phone, captcha = captcha).exists() == False:
+			return JsonResponse({'result': ERROR, 'message': r'验证码输入错误!'})
+		p = Phone.objects.get(phone_number = phone, captcha = captcha)
+		p.delete()
+		return JsonResponse({'result': ACCEPT, 'message': r'验证成功!'})
 
 @csrf_exempt
 def submit(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
 		qid = int(data_json['qid'])
+		email = data_json.get('email', '')
+		phone = str(data_json.get('phone', ''))
 		q = Questionnaire.objects.get(id = qid)
+		author = ""
+		if request.session.get('is_login') == True and q.certification == EMAIL_ADRESS:
+			if SubmitInfo.objects.filter(author = request.session.get('user'), qid = q.id).exists() == True:
+				return JsonResponse({'result': ERROR, 'message':r'您已填写过该问卷!'})
+			author = request.session.get('user')
+		elif phone != '':
+			if Phone.objects.filter(phone_number = phone, qid = q.id):
+				return JsonResponse({'result': ERROR, 'message':r'您已填写过该问卷!'})
+		# 身份认证模块
+
 		q.count = q.count + 1
 		q.save()
 		results = data_json['results']
@@ -33,8 +72,11 @@ def submit(request):
 		else:
 			total = int(total['id__max']) + 1
 		
-		submitinfo = SubmitInfo(id = total, qid = qid, submit_time = str(datetime.datetime.now()))
+		submitinfo = SubmitInfo(id = total, qid = qid, submit_time = str(datetime.datetime.now()), author = author)
 		submitinfo.save()
+		if phone != '':
+			p = Phone(phone_number = phone, captcha = "", sid = submitinfo.id, qid = q.id)
+			p.save()
 		for i in results:
 			submit = Submit(sid = total, problem_id = int(i['problem_id']), type = int(i['type']), answer = "")
 			if i['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
@@ -43,7 +85,60 @@ def submit(request):
 				ans = i['answer'][0]
 			submit.answer = ans
 			submit.save()
-		
+		# 问卷记录提交
+
+		if q.type in [TESTING_SCORE, TESTING_CORRECTION, TESTING_BOTH, TESTING_NO]:
+			score = 0.
+			std_ans = []
+			for i in results:
+				question = Question.objects.get(id = i['problem_id'])
+				if question.is_essential == True:
+					continue
+				if i['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+					ans = list_to_string(i['answer'])
+					stand = StandardAnswer.objects.get(i['problem_id'])
+					std_ans.append({'problem_id': i['problem_id'], 'ans': ans.sort(), 'type':question.type})
+					# 预处理与标准答案
+
+					if i['type'] == SINGLE_CHOICE:
+						if str(ans[0]) == stand.content:
+							score += stand.score
+						# 单选得分
+					else:
+						ans.sort()
+						std = string_to_list(stand.content)
+						if ans == std:
+							score += stand.score
+						elif q.select_less_score == True:
+							count = sum([1 if x in std else 0 for x in ans])
+							if count == len(ans):
+								score += stand.score/2
+						# 多选得分
+				else:
+					ans = i['answer'][0]
+					stand = StandardAnswer.objects.get(i['problem_id'])
+					std = string_to_list(stand.content)
+					if ans in std:
+						score += stand.score
+					# 填空得分
+			
+			submitinfo.score = score
+			submitinfo.save()
+			# 改卷部分
+
+			if q.type == TESTING_NO:
+				return JsonResponse({'result': ACCEPT, 'message': r'提交成功!'})
+			js = {'result': ACCEPT, 'message': r'提交成功!'}
+			if q.type in [TESTING_SCORE, TESTING_BOTH]:
+				js['score'] = score
+			if q.type in [TESTING_BOTH, TESTING_CORRECTION]:
+				js['stand_ans'] = std_ans
+			return JsonResponse(js)
+			# 反馈部分
+		elif q.type in [VOTING_AFTER, VOTING_BOTH]:
+			
+			pass
+			# 投票
 		return JsonResponse({'result': ACCEPT, 'message': r'提交成功!'})
 
 def delete_result(qid):
