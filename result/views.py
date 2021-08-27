@@ -12,13 +12,12 @@ from .wordclound import *
 from .verify import *
 from django.http import FileResponse
 from django.http import HttpResponse
-import datetime
+from datetime import datetime
 import json
 import xlrd
 import xlwt
 from six import BytesIO
 import re
-# Create your views here.
 
 @csrf_exempt
 def send_captcha(request):
@@ -72,8 +71,7 @@ def submit(request):
 		else:
 			total = int(total['id__max']) + 1
 		
-		submitinfo = SubmitInfo(id = total, qid = qid, submit_time = str(datetime.datetime.now()), author = author)
-		submitinfo.save()
+		submitinfo = SubmitInfo.objects.create(id = total, qid = qid, author = author)
 		if phone != '':
 			p = Phone(phone_number = phone, captcha = "", sid = submitinfo.id, qid = q.id)
 			p.save()
@@ -182,7 +180,7 @@ def download(request):
 					sh.write(0, j+2, p.content)
 				# Print the title
 			sh.write(i+1, 0, i)
-			sh.write(i+1, 1, submits[i].submit_time[:19])
+			sh.write(i+1, 1, submits[i].submit_time.strftime('%Y-%m-%d %H:%M:%S'))
 			for j in range(len(answers)):
 				s = string_to_list(answers[j].answer)
 				if len(s) == 0 or s[0] == "":
@@ -199,32 +197,6 @@ def download(request):
 		name = 'img/' + str(qid) + '.xls'
 		book.save(name)
 		return JsonResponse({'result': ACCEPT, 'message': r'成功!', 'name':str(qid) + '.xls'})
-
-'''
-# 复制过去的答卷的提交时间早于新问卷的创建时间会不会有问题？
-def copy_result(dest_qid, src_qid):
-	results = SubmitInfo.objects.get(qid = src_qid)
-	for x in results:
-		submits = Submit.objects.filter(sid = x.id)
-		submits.sort(key = lambda x: x.problem_id)
-		# problem_id实际与rank同序
-		questions = [x for x in Question.objects.filter(questionnaire_id = dest_qid)]
-		questions.sort(key = lambda x: x.rank)
-
-		total = SubmitInfo.objects.all().aggregate(Max('id'))
-		if total['id__max'] == None:
-			total = 0
-		else:
-			total = int(total['id__max']) + 1
-		submit_info = SubmitInfo(id = total, qid = dest_qid, submit_time = x.submit_time, author = x.author)
-		submit_info.save()
-
-		num = 0
-		for y in submits:
-			submit = Submit(sid = submit_info.id, problem_id = questions[num].id, type = y.type, answer = y.answer)
-			submit.save()
-			num += 1
-'''
 
 @csrf_exempt
 def analyze(request):
