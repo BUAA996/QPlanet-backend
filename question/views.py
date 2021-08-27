@@ -36,7 +36,7 @@ def save_questions(questions, qid):
             )
             if x['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
                 question.extra = list_to_string(x['option'], x['quota'])
-            elif x['type'] in [COMPLETION, DESCRIPTION]:
+            elif x['type'] in [COMPLETION, DESCRIPTION, GRADING]:
                 question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])
             question.save()
             if question.get('standard_answer', -1) != -1:
@@ -68,7 +68,7 @@ def get_questions(qid, with_id):
             d['lower'] = -1
             d['upper'] = -1
             d['requirement'] = -1
-        elif x.type in [COMPLETION, DESCRIPTION]:
+        elif x.type in [COMPLETION, DESCRIPTION, GRADING]:
             res = string_to_int(x.extra)
             d['option'] = []
             d['quota'] = []
@@ -94,7 +94,7 @@ def update_questions(questions):
         question.rank = num
         if question.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
             question.extra = list_to_string(x['option'], x['quota'])
-        elif type in [COMPLETION, DESCRIPTION]:
+        elif type in [COMPLETION, DESCRIPTION, GRADING]:
             question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])
         question.save()
         num += 1
