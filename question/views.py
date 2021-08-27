@@ -36,11 +36,13 @@ def save_questions(questions, qid):
             )
             if x['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
                 question.extra = list_to_string(x['option'], x['quota'])
-            elif x['type'] in [COMPLETION, DESCRIPTION, GRADING]:
+            elif x['type'] in [COMPLETION, DESCRIPTION]:
                 question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])
+            elif x['type'] == GRADING:
+                question.extra = int_to_string(0, x['upper'], 0)
             question.save()
-            if question.get('standard_answer', -1) != -1:
-                tmp = question.get('standard_answer')
+            if x.get('standard_answer', -1) != -1:
+                tmp = x.get('standard_answer')
                 question_id = Question.objects.filter(questionnaire_id = qid, rank = num)
                 StandardAnswer.objects.create(qid = question_id, type = x['type'], score = tmp['score'],
                     content = answer_to_string(tmp['content']))

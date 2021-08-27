@@ -27,6 +27,7 @@ def datetime_to_str(time):
 	return time.strftime('%Y-%m-%d %H:%M')
 
 def str_to_datetime(str):
+	print(str)
 	return datetime.strptime(str, '%Y-%m-%d %H:%M')
 	
 @csrf_exempt
@@ -74,13 +75,14 @@ def build_questionnaire(title, description, own, type, deadline, duration, rando
 		
 	questionnaire = Questionnaire.objects.create(
 		id = total, title = title, description = description, own = own, type = type, 
-		deadline = str_to_datetime(deadline), duration = duration, count = 0, hash = hash(total), 
+		deadline = deadline, duration = duration, count = 0, hash = "", 
 		random_order = random_order, select_less_score = select_less_score, 
 		certification = certification, show_number = show_number)
+	hash_val = hash(questionnaire.id)
 
 	save_questions(questions, questionnaire.id)
 	Info.objects.create(id = total, state = SAVED)
-	return [questionnaire.id, questionnaire.hash]
+	return questionnaire.id, hash_val
 
 @csrf_exempt
 def create(request):
@@ -95,7 +97,7 @@ def create(request):
 			temp = datetime.now() + timedelta(hours = 72)
 		else:
 			temp = str_to_datetime(data_json['deadline'])
-		res = build_questionnaire(title = data_json['title'],
+		id,hash = build_questionnaire(title = data_json['title'],
 					description = data_json['description'],
 					own = username,
 					type = int(data_json['type']),
@@ -104,11 +106,12 @@ def create(request):
 					duration = int(data_json.get('duration', 0)),
 					random_order = data_json.get('random_order', False),
 					select_less_score = data_json.get('select_less_score', False),
-					certification = data_json['certification'],
+					certification = int(data_json.get('certification', 0)),
 					show_number = data_json.get('show_number', True),
 					questions = data_json['questions']
 			)
-		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': res[0], 'hash': res[1]})
+
+		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': id, 'hash': hash})
 
 		'''
 		if data_json.get('title', -1) != -1 and data_json.get('description', -1) != -1 \
@@ -144,10 +147,10 @@ def list(request):
 				'create_time': datetime_to_str(x.create_time), 
 				'upload_time': datetime_to_str(info.upload_time)
 			}
-			dt_time = x.create_time.strftime('%Y-%m-%d %H:%M:%S')
-			d['create_time_int'] = int(dt_time.timestamp())
-			dt_time = x.upload_time.strftime('%Y-%m-%d %H:%M:%S')
-			d['upload_time_int'] = int(dt_time.timestamp())
+			# dt_time = x.create_time.strftime('%Y-%m-%d %H:%M:%S')
+			d['create_time_int'] = int(x.create_time.timestamp())
+			# dt_time = x.upload_time.strftime('%Y-%m-%d %H:%M:%S')
+			# d['upload_time_int'] = int(x.upload_time.timestamp())
 			result['questionnaires'].append(d)
 		return JsonResponse(result)
 
