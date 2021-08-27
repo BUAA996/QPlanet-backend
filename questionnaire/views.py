@@ -27,7 +27,6 @@ def datetime_to_str(time):
 	return time.strftime('%Y-%m-%d %H:%M')
 
 def str_to_datetime(str):
-	print(str)
 	return datetime.strptime(str, '%Y-%m-%d %H:%M')
 	
 @csrf_exempt
@@ -53,9 +52,11 @@ def check_close(q):
 	info = Info.objects.get(id = q.id)
 	if info.state != RELEASE:
 		return 0
-	if datetime.datetime.now() < q.deadline:
+	if q.deadline == None:
 		return 0
-	info.state = CLOSED
+	if datetime.now() < q.deadline:
+		return 0
+	info.state = SAVED
 	info.save()
 	return 1
 
@@ -91,8 +92,8 @@ def create(request):
 		data_json = json.loads(request.body)
 		username = request.session.get('user')
 
-		if data_json.get('deadline', -1) == -1:
-			temp = datetime.now() + timedelta(hours = 72)
+		if data_json['deadline'] == None:
+			temp = None
 		else:
 			temp = str_to_datetime(data_json['deadline'])
 		id,hash = build_questionnaire(title = data_json['title'],
@@ -354,17 +355,6 @@ def search_questionnaires(request):
 			d['upload_time_int'] = int(dt_time.timestamp())
 			res_tmp.append(d)
 		return JsonResponse({'result': ACCEPT, 'message': res_tmp})
-
-def check_close(q):
-	#TODO calculate the res
-	info = Info.objects.get(id = q.id)
-	if info.state != RELEASE:
-		return 0
-	if datetime.now() < q.deadline:
-		return 0
-	info.state = SAVED
-	info.save()
-	return 1
 
 @csrf_exempt
 def check_type(request):

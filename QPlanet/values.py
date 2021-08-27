@@ -6,8 +6,7 @@ FORM_ERROR = r"参数格式错误，请检查传参"
 
 SAVED = 0
 RELEASE = 1
-CLOSED = 2
-DELETED = 3
+DELETED = 2
 
 SINGLE_CHOICE = 0		# 单选
 MULTIPLE_CHOICE = 1		# 多选
