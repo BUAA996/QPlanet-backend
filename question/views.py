@@ -9,9 +9,10 @@ def list_to_string(option, quota):
     return SEPARATOR.join(option + list(map(str, quota)))
 
 def string_to_list(extra):
+    print(extra)
     tmp = list(extra.split(SEPARATOR))
-    option = tmp[: len(tmp) // 2 + 1]
-    quota = tmp[len(tmp) // 2 + 1: ]
+    option = tmp[: len(tmp) // 2]
+    quota = tmp[len(tmp) // 2: ]
     return option, list(map(int, quota))
 
 def int_to_string(lower, upper, requirement):
