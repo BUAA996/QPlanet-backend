@@ -32,22 +32,21 @@ def str_to_datetime(str):
 	
 @csrf_exempt
 def get_total(request):
-	if request.method == 'POST':
-		total = Questionnaire.objects.all().aggregate(Max('id'))
-		if total['id__max'] == None:
-			total = 1
-		else:
-			total = int(total['id__max'])
-		total += 300
+	total = Questionnaire.objects.all().aggregate(Max('id'))
+	if total['id__max'] == None:
+		total = 1
+	else:
+		total = int(total['id__max'])
+	total += 300
 
-		s_total = SubmitInfo.objects.all().aggregate(Max('id'))
-		if s_total['id__max'] == None:
-			s_total = 1
-		else:
-			s_total = int(s_total['id__max'])
-		s_total += 300
+	s_total = SubmitInfo.objects.all().aggregate(Max('id'))
+	if s_total['id__max'] == None:
+		s_total = 1
+	else:
+		s_total = int(s_total['id__max'])
+	s_total += 300
 
-		return JsonResponse({'result': ACCEPT, 'message':r'获取成功!', 'total':total, 'submit_total':s_total})
+	return JsonResponse({'result': ACCEPT, 'message':r'获取成功!', 'total':total, 'submit_total':s_total})
 
 def check_close(q):
 	#TODO calculate the res
@@ -72,16 +71,15 @@ def build_questionnaire(title, description, own, type, deadline, duration, rando
 		total = 1
 	else:
 		total = int(total['id__max']) + 1
-		
+	Info.objects.create(id = total, state = SAVED)
 	questionnaire = Questionnaire.objects.create(
 		id = total, title = title, description = description, own = own, type = type, 
 		deadline = deadline, duration = duration, count = 0, hash = "", 
 		random_order = random_order, select_less_score = select_less_score, 
 		certification = certification, show_number = show_number)
 	hash_val = hash(questionnaire.id)
-
 	save_questions(questions, questionnaire.id)
-	Info.objects.create(id = total, state = SAVED)
+	
 	return questionnaire.id, hash_val
 
 @csrf_exempt
@@ -143,14 +141,14 @@ def list(request):
 			check_close(x)
 			info = Info.objects.get(id = x.id)
 			d = {'id': x.id, 'title': x.title, 'description': x.description, 'type': x.type,
-				'count': x.count, 'hash': x.hash, 'state': info.state, 'quota': x.quota, 
+				'count': x.count, 'hash': x.hash, 'status': info.state, 'quota': x.quota, 
 				'create_time': datetime_to_str(x.create_time), 
 				'upload_time': datetime_to_str(info.upload_time)
 			}
 			# dt_time = x.create_time.strftime('%Y-%m-%d %H:%M:%S')
 			d['create_time_int'] = int(x.create_time.timestamp())
 			# dt_time = x.upload_time.strftime('%Y-%m-%d %H:%M:%S')
-			# d['upload_time_int'] = int(x.upload_time.timestamp())
+			d['upload_time_int'] = int(info.upload_time.timestamp())
 			result['questionnaires'].append(d)
 		return JsonResponse(result)
 
@@ -400,8 +398,19 @@ def view(request):
 		# 	 return JsonResponse({'result': ERROR, 'message': r'问卷已关闭!'})
 		info = Info.objects.get(id = q.id)
 		
-		result = {'result': ACCEPT, 'message': r'获取成功!', 'qid':q.id, 'title':q.title, 
-				'description':q.description, 'type': q.type, 'show_number': q.show_number}
+		result = {'result': ACCEPT, 'message': r'获取成功!',
+				'qid':q.id,
+				'title':q.title, 
+				'description':q.description,
+				'type': q.type,
+				'show_number': q.show_number,
+				'deadline': q.deadline,
+				'quota': q.quota,
+				'random_order': q.random_order,
+				'select_less_score': q.select_less_score,
+				'certification': q.certification,
+				'show_number': q.show_number
+			}
 		result['questions'] = get_questions(q.id) 
 		return JsonResponse(result)
 
@@ -426,11 +435,11 @@ def fill(request):
 			a = result['questions']
 			l = len(a)
 			# TODO set random seed
-			# random.seed(1)
+			random.seed(1)
 			for i in range(30):
 				x = rand(0, l-1)
 				y = rand(0, l-1)
-				if a[x].is_essential == True or a[y].is_essential == True:
+				if a[x]['is_essential'] == True or a[y]['is_essential'] == True:
 					continue
 				a[x],a[y] = a[y],a[x]
 			result['questions'] = a

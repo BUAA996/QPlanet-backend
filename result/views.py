@@ -220,10 +220,11 @@ def analyze(request):
 		questions.sort(key = lambda x : x.rank)
 		for q in questions:
 			if q.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+				op,fk = string_to_list(q.extra)
 				result['questions'].append({'content': q.content,
 											'type': q.type, 
-											'option': string_to_list(q.option),
-											'count':[0]*len(string_to_list(q.option))})
+											'option': op,
+											'count':[0]*len(op)})
 			else:
 				result['questions'].append({'content': q.content, 'type': q.type})
 		# Put basic question informations

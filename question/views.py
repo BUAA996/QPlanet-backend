@@ -40,6 +40,8 @@ def save_questions(questions, qid):
                 question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])
             elif x['type'] == GRADING:
                 question.extra = int_to_string(0, x['upper'], 0)
+            if x.get('is_essential', -1) != -1:
+                question.is_essential = x['is_essential']
             question.save()
             if x.get('standard_answer', -1) != -1:
                 tmp = x.get('standard_answer')
@@ -60,7 +62,7 @@ def get_questions(qid, with_id = True):
     tmp = []
     for x in questions:
         d = {'type': x.type, 'content': x.content, 'is_required': x.is_required, 
-            'description': x.description}
+            'description': x.description, 'is_essential': x.is_essential}
         if with_id:
             d['id'] = x.id
         if x.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
