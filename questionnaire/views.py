@@ -12,7 +12,7 @@ from question.views import *
 from result.views import *
 import qrcode
 import json
-import datetime
+from datetime import datetime
 import random
 import string
 from django import utils
@@ -23,12 +23,15 @@ from docx.shared import Pt,RGBColor
 from docx2pdf import convert
 from random import randint as rand
 
+def datetime_to_str(time):
+	return time.strftime('%Y-%m-%d %H:%M')
+
 def check_close(q):
 	#TODO calculate the res
 	info = Info.objects.get(id = q.id)
 	if info.state != RELEASE:
 		return 0
-	if datetime.datetime.now() < q.deadline:
+	if datetime.now() < q.deadline:
 		return 0
 	info.state = CLOSED
 	info.save()
@@ -48,10 +51,9 @@ def build_questionnaire(title, description, own, type, deadline, duration, rando
 		total = int(total['id__max']) + 1
 		
 	questionnaire = Questionnaire.objects.create(
-		id = total, title = title, description = description, own = own, type = type,
-		create_time = datetime.datetime.now(), deadline = deadline, duration = duration,
-		count = 0, hash = hash(total), random_order = random_order, select_less_score = select_less_score,
-		certification = certification, show_number = show_number)
+		id = total, title = title, description = description, own = own, type = type, deadline = deadline, 
+		duration = duration, count = 0, hash = hash(total), random_order = random_order, 
+		select_less_score = select_less_score, certification = certification, show_number = show_number)
 
 	save_questions(questions, questionnaire.id)
 	Info.objects.create(id = total, state = SAVED)
@@ -70,7 +72,7 @@ def create(request):
 					description = data_json['description'],
 					own = username,
 					type = int(data_json['type']),
-					deadline = data_json.get('deadline', datetime.datetime.now()+datetime.timedelta(hours = 72)),
+					deadline = data_json.get('deadline', datetime.datetime.now() + datetime.timedelta(hours = 72)),
 					# TODO DDL 默认时间设置问题
 					duration = int(data_json.get('duration', 0)),
 					random_order = data_json.get('random_order', False),
@@ -110,9 +112,10 @@ def list(request):
 		for x in l:
 			check_close(x)
 			info = Info.objects.get(id = x.id)
-			d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-				'count':x.count, 'hash':x.hash, 'state':info.state,
-				'create_time':x.create_time[:16], 'upload_time':info.upload_time, 
+			d = {'id': x.id, 'title': x.title, 'description': x.description, 'type': x.type,
+				'count': x.count, 'hash': x.hash, 'state': info.state, 
+				'create_time': datetime_to_str(x.create_time), 
+				'upload_time': datetime_to_str(info.upload_time)
 			}
 			dt_time = datetime.datetime.strptime(x.create_time[:19], '%Y-%m-%d %H:%M:%S')
 			d['create_time_int'] = int(dt_time.timestamp())
