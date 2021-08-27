@@ -447,7 +447,7 @@ def modify_questionnaire(request):
 def copy_questionnaire(qid, title, to_username):
 	q = Questionnaire.objects.get(id = qid)
 	questions = get_questions(qid, False)
-	res = build_questionnaire(title, q.description, q.type, q.limit_time, q.validity, to_username, questions)
+	res = build_questionnaire(title, q.description, to_username, q.type, q.deadline, q.duration, q.random_order, q.select_less_score, q.certification, q.show_number, questions)
 	return res
 
 @csrf_exempt
