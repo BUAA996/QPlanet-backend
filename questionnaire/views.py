@@ -12,7 +12,7 @@ from question.views import *
 from result.views import *
 import qrcode
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 import string
 from django import utils
@@ -72,7 +72,7 @@ def create(request):
 					description = data_json['description'],
 					own = username,
 					type = int(data_json['type']),
-					deadline = data_json.get('deadline', datetime.datetime.now() + datetime.timedelta(hours = 72)),
+					deadline = data_json.get('deadline', datetime.now() + timedelta(hours = 72)),
 					# TODO DDL 默认时间设置问题
 					duration = int(data_json.get('duration', 0)),
 					random_order = data_json.get('random_order', False),
@@ -117,13 +117,10 @@ def list(request):
 				'create_time': datetime_to_str(x.create_time), 
 				'upload_time': datetime_to_str(info.upload_time)
 			}
-			dt_time = datetime.datetime.strptime(x.create_time[:19], '%Y-%m-%d %H:%M:%S')
+			dt_time = x.create_time.strftime('%Y-%m-%d %H:%M:%S')
 			d['create_time_int'] = int(dt_time.timestamp())
-			d['upload_time_int'] = 0
-			if info.upload_time != "":
-				dt_time = datetime.datetime.strptime(info.upload_time[:19], '%Y-%m-%d %H:%M:%S')
-				d['upload_time_int'] = int(dt_time.timestamp())
-				d['upload_time'] = d['upload_time'][:16]
+			dt_time = x.upload_time.strftime('%Y-%m-%d %H:%M:%S')
+			d['upload_time_int'] = int(dt_time.timestamp())
 			result['questionnaires'].append(d)
 		return JsonResponse(result)
 
