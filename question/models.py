@@ -11,7 +11,7 @@ class Question(models.Model):
 	is_required = models.BooleanField(default = False)
 	is_essential = models.BooleanField(default = False)
 	description = models.TextField()
-	extra = models.TextField()
+	extra = models.TextField(null = True, blank = True)
 
 class StandardAnswer(models.Model):
 	qid = models.IntegerField()  #  question id
