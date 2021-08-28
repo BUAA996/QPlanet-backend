@@ -106,7 +106,7 @@ def create(request):
 					type = int(data_json['type']),
 					deadline = temp,
 					quota = data_json.get('quota', None),
-					duration = int(data_json.get('duration', None)),
+					duration = int(data_json.get('duration', -1)),
 					random_order = data_json.get('random_order', False),
 					select_less_score = data_json.get('select_less_score', False),
 					certification = int(data_json.get('certification', 0)),
