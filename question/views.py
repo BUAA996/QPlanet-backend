@@ -33,22 +33,21 @@ def count_submissions(pid):
     option,quota = string_to_list(question.extra)
     count = [0 for i in range(len(option))]
     all = [x for x in Submit.objects.filter(problem_id = question.id)]
-    count = 0
     for i in all:
         ans = [int(x) for x in answer_to_string(i.answer)]
         for j in ans:
             count[j] += 1
-	return count
+    return count
 
 def count_surplus(question_id):
     question = Question.objects.get(id = question_id)
     res = string_to_list(question.extra)
     quota = res[1]
-    len = quota.length()
+    l = len(quota)
     res = []
     submission = count_submissions(question_id)
-    for i in range(len):
-        res[i] = quota[i] - submission[i]
+    for i in range(l):
+        res.append(quota[i] - submission[i])
     return res
 
 def save_questions(questions, qid):
@@ -98,8 +97,10 @@ def get_questions(qid, with_id = True):
             d['lower'] = -1
             d['upper'] = -1
             d['requirement'] = -1
-            if questionnaire.type in [1, 2, 3, 4] and res[1][0] > 0:
+            if questionnaire.type == SIGNUP and res[1][0] > 0:
                 d['surplus'] = count_surplus(x.id)
+            if questionnaire.type in [VOTING_BEFORE, VOTING_BOTH]:
+                d['count'] = count_submissions(x.id)	
         elif x.type in [COMPLETION, DESCRIPTION, GRADING]:
             res = string_to_int(x.extra)
             d['option'] = []
@@ -113,11 +114,12 @@ def get_questions(qid, with_id = True):
             d['lower'] = -1
             d['upper'] = -1
             d['requirement'] = -1
-        if StandardAnswer.objects.filter(qid = x.id).exists():
+        if StandardAnswer.objects.filter(qid = x.id).exists() and SIGNUP <= questionnaire.type <= TESTING_NO:
             standard_answer = StandardAnswer.objects.get(qid = x.id)
             d['standard_answer'] = {'content': string_to_answer(standard_answer.content), 
                 'score': standard_answer.score}
             if x.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+                print(qid)
                 d['standard_answer']['content'] = [int(x) for x in d['standard_answer']['content']]
         else:
             d['standard_answer'] = {'content': [], 'score': -1}

@@ -270,6 +270,8 @@ def check_type(request):
 			if check_close(q) == 1:
 				return JsonResponse({'result': ERROR, 'message':r'问卷已关闭!'})
 			return JsonResponse({'result': ACCEPT, 'message': r'获取成功!', 'requirement': int(hash[-1])})
+	else:
+		print('IP is', request.META.get('HTTP_X_REAL_IP'))
 
 @csrf_exempt
 def view(request):
@@ -316,9 +318,6 @@ def fill(request):
 		check_close(q)
 		if info.state != RELEASE:
 			return JsonResponse({'result': ERROR, 'message': r'问卷未发布!'})
-		# TODO more information
-		# Vote
-		# Sign
 
 		result = {'result': ACCEPT, 'message': r'获取成功!',
 				'qid':q.id,

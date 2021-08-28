@@ -53,6 +53,7 @@ def submit(request):
 		phone = str(data_json.get('phone', ''))
 		q = Questionnaire.objects.get(id = qid)
 		author = ""
+		
 		if request.session.get('is_login') == True and q.certification == EMAIL_ADRESS:
 			if SubmitInfo.objects.filter(author = request.session.get('user'), qid = q.id).exists() == True:
 				return JsonResponse({'result': ERROR, 'message':r'您已填写过该问卷!'})
@@ -61,7 +62,7 @@ def submit(request):
 			if Phone.objects.filter(phone_number = phone, qid = q.id):
 				return JsonResponse({'result': ERROR, 'message':r'您已填写过该问卷!'})
 		# 身份认证模块
-
+		
 		results = data_json['results']
 		for i in results:
 			question = Question.objects.get(id = i['problem_id'])
@@ -71,11 +72,12 @@ def submit(request):
 			ans = i['answer'][0]
 			if question.is_required == False and len(ans) == 0:
 				continue
-			if len(ans)<lower or len(ans)>upper:
-				return JsonResponse({'result': ERROR, 'message':r'填空题长度非法!'})
+			if lower>0 and upper>0 and lower<=upper:
+				if len(ans)<lower or len(ans)>upper:
+					return JsonResponse({'result': ERROR, 'message':r'填空题长度非法!'})
 			if requirement == PHONE_NUM:
 				pattern = re.compile(r'^1(3\d|4[5-9]|5[0-35-9]|6[2567]|7[0-8]|8\d|9[0-35-9])\d{8}$')
-				if pattern.search(phone) == None:
+				if pattern.search(ans) == None:
 					return JsonResponse({'result': ERROR, 'message': r'手机号格式非法!'})
 			if requirement == EMAIL_ADRESS:
 				if '@' not in ans:
@@ -100,7 +102,7 @@ def submit(request):
 					if res[x] <= 0:
 						return JsonResponse({'result': ERROR, 'message': r'容量不足!'})
 		# 报名题容量检测
-
+		
 		q.count = q.count + 1
 		q.save()
 		total = SubmitInfo.objects.all().aggregate(Max('id'))
@@ -278,7 +280,7 @@ def analyze(request):
 											'type': q.type, 
 											'option': op,
 											'count':[0]*len(op)})
-			elif q.type in [COMPLETION, DESCRIPTION]:
+			elif q.type in [COMPLETION, DESCRIPTION, LOCATION]:
 				result['questions'].append({'content': q.content, 'type': q.type})
 			elif q.type == GRADING:
 				lower,upper,bin = string_to_int(q.extra)
@@ -293,13 +295,19 @@ def analyze(request):
 		# Put basic question informations
 
 		for i in range(len(questions)):
-			if questions[i].type in [COMPLETION, DESCRIPTION]:
+			if questions[i].type in [COMPLETION, DESCRIPTION, LOCATION]:
 				answers = [x.answer for x in Submit.objects.filter(problem_id = questions[i].id)]
 				submit_id = [x.sid for x in Submit.objects.filter(problem_id = questions[i].id)]
 				submit_time = []
 				for x in submit_id:
 					info = SubmitInfo.objects.get(id = x, qid = qid)
 					submit_time.append(str(info.submit_time)[:16])
+				if questions[i].type == LOCATION:
+					result['questions'][i]['all'] = answers
+					result['questions'][i]['submit_time'] = submit_time
+					continue
+				# 打分题不做处理
+
 				s = " ".join(answers)
 				# result['questions'][i]['url'] = draw_wordcloud(s)
 				a,b = word_count(s)
@@ -307,7 +315,7 @@ def analyze(request):
 				result['questions'][i]['count'] = b
 				result['questions'][i]['all'] = answers
 				result['questions'][i]['submit_time'] = submit_time
-			else:
+			elif questions[i].type in [SINGLE_CHOICE, MULTIPLE_CHOICE, GRADING]:
 				all = [x for x in Submit.objects.filter(problem_id = questions[i].id)]
 				for x in all:
 					s = string_to_answer(x.answer)
