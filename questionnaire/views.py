@@ -48,13 +48,12 @@ def get_total(request):
 	return JsonResponse({'result': ACCEPT, 'message':r'获取成功!', 'total':total, 'submit_total':s_total})
 
 def check_close(q):
-	#TODO calculate the res
+	#已关闭返回1
+	#TODO calculate the res/quota
 	info = Info.objects.get(id = q.id)
 	if info.state != RELEASE:
-		return 0
-	if q.deadline == None:
-		return 0
-	if datetime.now() < q.deadline:
+		return 1
+	if (q.deadline == None or datetime.now() < q.deadline) and (q.quota == None or q.count < q.quota):
 		return 0
 	info.state = SAVED
 	info.save()
