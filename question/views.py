@@ -52,7 +52,7 @@ def delete_questions(qid):
     questions = Question.objects.filter(questionnaire_id = qid)
     for question in questions:
         StandardAnswer.objects.filter(qid = question.id).delete()
-    Question.objects.filter(questionnaire_id = qid).delete()
+        question.delete()
 
 def get_questions(qid, with_id = True):
     questions = [x for x in Question.objects.filter(questionnaire_id = qid)]
