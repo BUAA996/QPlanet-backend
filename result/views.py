@@ -233,11 +233,18 @@ def analyze(request):
 		for i in range(len(questions)):
 			if questions[i].type not in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
 				answers = [x.answer for x in Submit.objects.filter(problem_id = questions[i].id)]
+				submit_id = [x.sid for x in Submit.objects.filter(problem_id = questions[i].id)]
+				submit_time = []
+				for x in submit_id:
+					info = SubmitInfo.objects.get(id = x, qid = qid)
+					submit_time.append(info.str(submit_time)[:16])
 				s = " ".join(answers)
 				# result['questions'][i]['url'] = draw_wordcloud(s)
 				a,b = word_count(s)
 				result['questions'][i]['option'] = a
 				result['questions'][i]['count'] = b
+				result['questions'][i]['all'] = answers
+				result['questions'][i]['submit_time'] = submit_time
 			else:
 				all = [x for x in Submit.objects.filter(problem_id = questions[i].id)]
 				for x in all:
