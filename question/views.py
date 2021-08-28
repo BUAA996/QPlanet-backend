@@ -40,6 +40,17 @@ def count_submissions(pid):
             count[j] += 1
 	return count
 
+def count_surplus(question_id):
+    question = Question.objects.get(id = question_id)
+    res = string_to_list(question.extra)
+    quota = res[1]
+    len = quota.length()
+    res = []
+    submission = count_submissions(question_id)
+    for i in range(len):
+        res[i] = quota[i] - submission[i]
+    return res
+
 def save_questions(questions, qid):
     if questions:
         num = 1
@@ -71,6 +82,7 @@ def delete_questions(qid):
         question.delete()
 
 def get_questions(qid, with_id = True):
+    questionnaire = Questionnaire.objects.get(id = qid)
     questions = [x for x in Question.objects.filter(questionnaire_id = qid)]
     questions.sort(key = lambda x: x.rank)
     tmp = []
@@ -86,6 +98,8 @@ def get_questions(qid, with_id = True):
             d['lower'] = -1
             d['upper'] = -1
             d['requirement'] = -1
+            if questionnaire.type in [1, 2, 3, 4] and res[1][0] > 0:
+                d['surplus'] = count_surplus(x.id)
         elif x.type in [COMPLETION, DESCRIPTION, GRADING]:
             res = string_to_int(x.extra)
             d['option'] = []
