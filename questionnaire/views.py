@@ -96,41 +96,27 @@ def create(request):
 		data_json = json.loads(request.body)
 		username = request.session.get('user')
 
-		if data_json['deadline'] == None:
+		if data_json.get('deadline', -1) == -1 or data_json['deadline'] == None:
 			temp = None
 		else:
 			temp = str_to_datetime(data_json['deadline'])
-		id,hash = build_questionnaire(title = data_json['title'],
+		id, hash = build_questionnaire(title = data_json['title'],
 					description = data_json['description'],
 					own = username,
 					type = int(data_json['type']),
 					deadline = temp,
-					# TODO DDL 默认时间设置问题
-					duration = int(data_json.get('duration', 0)),
+					quota = data_json.get('quota', None),
+					duration = int(data_json.get('duration', None)),
 					random_order = data_json.get('random_order', False),
 					select_less_score = data_json.get('select_less_score', False),
 					certification = int(data_json.get('certification', 0)),
 					show_number = data_json.get('show_number', True),
-					questions = data_json['questions']
+					questions = data_json.get('questions', None)
 			)
 
 		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': id, 'hash': hash})
 	else:
 		print('IP is', request.META.get('HTTP_X_REAL_IP'))
-		'''
-		if data_json.get('title', -1) != -1 and data_json.get('description', -1) != -1 \
-			and data_json.get('type', -1) != -1 and data_json.get('limit_time', -1) != -1 \
-			and data_json.get('questions', -1) != -1 :
-			for x in data_json['questions']:
-				if x.get('type', -1) == -1 or x.get('content', -1) == -1 or x.get('is_required', -1) == -1 \
-					or x.get('description', -1) == -1:
-					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-				if (x.get('type') in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) == -1) \
-					or (x.get('type') not in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) != -1):
-					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-		else:
-			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-		'''
 
 @csrf_exempt
 def list(request):
