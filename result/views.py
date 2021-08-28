@@ -87,6 +87,19 @@ def submit(request):
 					return JsonResponse({'result': ERROR, 'message': r'数字格式非法!'})
 		# 填空题合法性检测
 
+		if q.type == SIGNUP:
+			for i in results:
+				question = Question.objects.get(id = i['problem_id'])
+				option,quota = string_to_list(question.extra)
+				if quota.count(-1) == len(option):
+					continue
+				res = count_surplus(question.id)
+				ans = answer_to_string(i['answer'])
+				ans = [int(x) for x in ans]
+				for x in ans:
+					
+		# 报名题容量检测
+
 		q.count = q.count + 1
 		q.save()
 		total = SubmitInfo.objects.all().aggregate(Max('id'))
