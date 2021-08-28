@@ -356,10 +356,9 @@ def modify_questionnaire(request):
 		
 		if data_json.get('modify_type', -1) == -1 or data_json.get('qid', -1) == -1 \
 			or data_json.get('title', -1) == -1 or data_json.get('description', -1) == -1 \
-			or data_json.get('deadline', -1) == -1 or data_json.get('duration', -1) == -1 \
+			or data_json.get('deadline', -1) == -1 or data_json.get('type', -1) == -1 \
 			or data_json.get('random_order', -1) == -1 or data_json.get('certification', -1) == -1 \
-			or data_json.get('show_number', -1) == -1 or data_json.get('questions', -1) == -1 \
-			or data_json.get('type', -1) == -1:
+			or data_json.get('show_number', -1) == -1 or data_json.get('questions', -1) == -1:
 			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
 
 		modify_type = data_json['modify_type']
@@ -378,7 +377,7 @@ def modify_questionnaire(request):
 			q.type = data_json['type']
 			q.title = data_json['title']
 			q.description = data_json['description']
-			q.duration = data_json['duration']
+			q.duration = data_json.get('duration', None)
 			q.random_order = data_json['random_order']
 			q.certification = data_json['certification']
 			q.show_number = data_json['show_number']
