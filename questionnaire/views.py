@@ -49,15 +49,20 @@ def get_total(request):
 
 def check_close(q):
 	#已关闭返回1
-	#TODO calculate the res/quota
 	info = Info.objects.get(id = q.id)
 	if info.state != RELEASE:
 		return 1
-	if (q.deadline == None or datetime.now() < q.deadline) and (q.quota == None or q.count < q.quota):
+	if q.deadline == None or datetime.now() < q.deadline:
 		return 0
 	info.state = SAVED
 	info.save()
 	return 1
+
+def check_could_submit(q):
+	if check_close(q):
+		return 0
+	if q.quota == None or q.count < q.quota:
+		return 1
 
 def hash(id):
 	q = Questionnaire.objects.get(id = id)
