@@ -98,7 +98,10 @@ def update_questions(questions):
         question = Question.objects.get(id = x['id'])
         question.content= x['content']
         question.is_required = x['is_required']
-        question.description = x['description']
+        if x.get('is_essential', -1) != -1:
+            question.is_essential = x['is_essential']
+        if x.get('description', -1) != -1:
+            question.description = x['description']
         question.rank = num
         if question.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
             question.extra = list_to_string(x['option'], x['quota'])
