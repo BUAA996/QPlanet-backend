@@ -70,7 +70,7 @@ def hash(id):
 	q.save()
 	return q.hash
 
-def build_questionnaire(title, description, own, type, deadline, duration, random_order, select_less_score, certification, show_number, questions):
+def build_questionnaire(title, description, own, type, deadline, quota, duration, random_order, select_less_score, certification, show_number, questions):
 	total = Questionnaire.objects.all().aggregate(Max('id'))
 	if total['id__max'] == None:
 		total = 1
@@ -79,7 +79,7 @@ def build_questionnaire(title, description, own, type, deadline, duration, rando
 	Info.objects.create(id = total, state = SAVED)
 	questionnaire = Questionnaire.objects.create(
 		id = total, title = title, description = description, own = own, type = type, 
-		deadline = deadline, duration = duration, count = 0, hash = "", 
+		deadline = deadline, quota = quota, duration = duration, count = 0, hash = "", 
 		random_order = random_order, select_less_score = select_less_score, 
 		certification = certification, show_number = show_number)
 	hash_val = hash(questionnaire.id)
