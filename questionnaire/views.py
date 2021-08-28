@@ -498,7 +498,6 @@ def copy_questionnaire(qid, title, to_username):
 @csrf_exempt
 def copy_questionnaire_to_self(request):
 	if request.method == 'POST':
-		print(request.body)
 		data_json = json.loads(request.body)
 		#return JsonResponse({'result': ACCEPT})
 		qid = int(data_json['qid'])
