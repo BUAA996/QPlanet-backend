@@ -87,7 +87,7 @@ def get_questions(qid, with_id = True):
             d['upper'] = -1
             d['requirement'] = -1
         if StandardAnswer.objects.filter(qid = x.id).exists():
-            standard_answer = StandardAnswer.objects.filter(qid = x.id)
+            standard_answer = StandardAnswer.objects.get(qid = x.id)
             d['standard_answer'] = {'content': string_to_answer(standard_answer.content), 
                 'score': standard_answer.score}
             if x.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:

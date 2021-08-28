@@ -76,6 +76,8 @@ def build_questionnaire(title, description, own, type, deadline, quota, duration
 		total = 1
 	else:
 		total = int(total['id__max']) + 1
+	if duration != None:
+		duration = int(duration)
 	Info.objects.create(id = total, state = SAVED)
 	questionnaire = Questionnaire.objects.create(
 		id = total, title = title, description = description, own = own, type = type, 
@@ -106,7 +108,7 @@ def create(request):
 					type = int(data_json['type']),
 					deadline = temp,
 					quota = data_json.get('quota', None),
-					duration = int(data_json.get('duration', -1)),
+					duration = data_json.get('duration', None),
 					random_order = data_json.get('random_order', False),
 					select_less_score = data_json.get('select_less_score', False),
 					certification = int(data_json.get('certification', 0)),
@@ -320,7 +322,21 @@ def fill(request):
 		# TODO more information
 		# Vote
 		# Sign
-		result = {'result': ACCEPT, 'message': r'获取成功!', 'qid': q.id, 'title': q.title, 'description': q.description, 'type': q.type}
+
+		result = {'result': ACCEPT, 'message': r'获取成功!',
+				'qid':q.id,
+				'title':q.title, 
+				'description':q.description,
+				'type': q.type,
+				'show_number': q.show_number,
+				'deadline': datetime_to_str(q.deadline),
+				'quota': q.quota,
+				'random_order': q.random_order,
+				'select_less_score': q.select_less_score,
+				'certification': q.certification,
+				'show_number': q.show_number
+			}
+		
 		result['questions'] = get_questions(q.id)
 		if q.random_order == True:
 			a = result['questions']
