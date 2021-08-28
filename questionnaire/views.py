@@ -285,9 +285,6 @@ def view(request):
 			if Questionnaire.objects.filter(hash=hash).exists() == False:
 				return JsonResponse({'result': ERROR, 'message': r'问卷不存在!'})
 			q = Questionnaire.objects.get(hash = hash)
-		# if check_close(q):
-		# 	 return JsonResponse({'result': ERROR, 'message': r'问卷已关闭!'})
-		info = Info.objects.get(id = q.id)
 		
 		result = {'result': ACCEPT, 'message': r'获取成功!',
 				'qid':q.id,
