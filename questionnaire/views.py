@@ -455,7 +455,7 @@ def modify_questionnaire(request):
 
 		if (q.type == 0 and data_json['type'] == 0) or (q.type == 5 and data_json['type'] == 5) \
 			or (q.type in [1, 2, 3, 4] and data_json['type'] in [1, 2, 3, 4]) \
-			or (q.type == [6, 7, 8, 9] and data_json['type'] in [6, 7, 8, 9]):
+			or (q.type in [6, 7, 8, 9] and data_json['type'] in [6, 7, 8, 9]):
 
 			if data_json['deadline'] == None:
 				temp = None
