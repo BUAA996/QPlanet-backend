@@ -60,7 +60,7 @@ def get_questions(qid, with_id = True):
     tmp = []
     for x in questions:
         d = {'type': x.type, 'content': x.content, 'is_required': x.is_required, 
-            'description': x.description, 'is_essential': x.is_essential}
+            'is_essential': x.is_essential, 'description': x.description}
         if with_id:
             d['id'] = x.id
         if x.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
@@ -77,6 +77,12 @@ def get_questions(qid, with_id = True):
             d['lower'] = res[0]
             d['upper'] = res[1]
             d['requirement'] = res[2]
+        elif x.type == GRADING:
+            d['option'] = []
+            d['quota'] = []
+            d['lower'] = -1
+            d['upper'] = -1
+            d['requirement'] = -1
         if StandardAnswer.objects.filter(qid = x.id).exists():
             standard_answer = StandardAnswer.objects.filter(qid = x.id)
             d['standard_answer'] = {'content': string_to_answer(standard_answer.content), 
