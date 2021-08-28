@@ -98,7 +98,9 @@ def update_questions(questions):
         question.rank = num
         if question.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
             question.extra = list_to_string(x['option'], x['quota'])
-        elif type in [COMPLETION, DESCRIPTION, GRADING]:
+        elif question.type in [COMPLETION, DESCRIPTION]:
             question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])
+        elif question.type == GRADING:
+            question.extra = int_to_string(0, x['upper'], 0)
         question.save()
         num += 1
