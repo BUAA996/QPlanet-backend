@@ -174,16 +174,15 @@ def submit(request):
 			# 反馈部分
 		elif q.type in [VOTING_AFTER, VOTING_BOTH]:
 			js = {'result': ACCEPT, 'message': r'提交成功!'}
+			js['votes'] = []
 			for i in results:
 				question = Question.objects.get(id = i['problem_id'])
 				if question.is_essential == True:
 					continue
 				if question.type not in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
 					continue
-				option,e = string_to_list(question.extra)
-				votes = [0]*len(option)
-				# TODO calculate votes
-
+				votes = count_submissions(question.id)
+				js['votes'].append({'problem_id': question.id, 'result': votes})
 			return JsonResponse(js)
 			# 投票
 		return JsonResponse({'result': ACCEPT, 'message': r'提交成功!'})
