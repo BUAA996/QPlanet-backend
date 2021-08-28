@@ -28,14 +28,16 @@ def answer_to_string(answer):
 def string_to_answer(answer):
     return list(answer.split(SEPARATOR))
 
-def count_submissions(pid, option_id):
-	question = Question.objects.get(id = pid)
-	all = [x for x in Submit.objects.filter(problem_id = question.id)]
-	count = 0
-	for i in all:
-		ans = [int(x) for x in answer_to_string(i.answer)]
-		if option_id in ans:
-			count += 1
+def count_submissions(pid):
+    question = Question.objects.get(id = pid)
+    option,quota = string_to_list(question.extra)
+    count = [0 for i in range(len(option))]
+    all = [x for x in Submit.objects.filter(problem_id = question.id)]
+    count = 0
+    for i in all:
+        ans = [int(x) for x in answer_to_string(i.answer)]
+        for j in ans:
+            count[j] += 1
 	return count
 
 def save_questions(questions, qid):
