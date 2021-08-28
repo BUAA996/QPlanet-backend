@@ -362,7 +362,7 @@ def modify_questionnaire(request):
 			q.type = data_json['type']
 			q.title = data_json['title']
 			q.description = data_json['description']
-			q.duration = data_json['limit_time']
+			q.duration = data_json['duration']
 			q.random_order = data_json['random_order']
 			q.certification = data_json['certification']
 			q.show_number = data_json['show_number']
