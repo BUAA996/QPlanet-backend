@@ -61,8 +61,10 @@ def check_close(q):
 def check_could_submit(q):
 	if check_close(q):
 		return 0
-	if q.quota == None or q.count < q.quota:
+	if q.quota == None or q.quota == -1 or q.count < q.quota:
 		return 1
+	else:
+		return 0
 
 def hash(id):
 	q = Questionnaire.objects.get(id = id)
