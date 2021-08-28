@@ -300,7 +300,6 @@ def view(request):
 				'select_less_score': q.select_less_score,
 				'certification': q.certification,
 				'show_number': q.show_number,
-				'state': info.state
 			}
 		result['questions'] = get_questions(q.id) 
 		return JsonResponse(result)
@@ -333,7 +332,6 @@ def fill(request):
 				'select_less_score': q.select_less_score,
 				'certification': q.certification,
 				'show_number': q.show_number,
-				'state': info.state
 			}
 		
 		result['questions'] = get_questions(q.id)
