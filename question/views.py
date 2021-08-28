@@ -32,7 +32,8 @@ def save_questions(questions, qid):
         for x in questions:
             question = Question(
                 questionnaire_id = qid, rank = num, type = x['type'], content = x['content'], 
-                is_required = x['is_required'], description = x['description']
+                is_required = x['is_required'], is_essential = x.get('is_essential', None),
+                description = x.get('description', None)
             )
             if x['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
                 question.extra = list_to_string(x['option'], x['quota'])
@@ -40,13 +41,10 @@ def save_questions(questions, qid):
                 question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])
             elif x['type'] == GRADING:
                 question.extra = int_to_string(0, x['upper'], 0)
-            if x.get('is_essential', -1) != -1:
-                question.is_essential = x['is_essential']
             question.save()
-            if x.get('standard_answer', -1) != -1 and x['standard_answer']['score'] != -1:
+            if x.get('standard_answer', -1) != -1 and x['standard_answer']['score'] != -1:  # for copy
                 tmp = x.get('standard_answer')
-                question_id = Question.objects.filter(questionnaire_id = qid, rank = num)
-                StandardAnswer.objects.create(qid = question_id, type = x['type'], score = tmp['score'],
+                StandardAnswer.objects.create(qid = question.id, type = x['type'], score = tmp['score'],
                     content = answer_to_string(tmp['content']))
             num += 1
 
