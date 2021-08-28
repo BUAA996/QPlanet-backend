@@ -450,7 +450,7 @@ def download(request):
 				else:
 					s += r'(多选) '
 				paragraph = document.add_paragraph(s + x.content)
-				options = string_to_list(x.option)
+				options,quota = string_to_list(x.option)
 				for j in range(len(options)):
 					s = chr(j + 65) + '. '
 					s = s + options[j]
