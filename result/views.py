@@ -97,7 +97,8 @@ def submit(request):
 				ans = answer_to_string(i['answer'])
 				ans = [int(x) for x in ans]
 				for x in ans:
-					
+					if res[x] <= 0:
+						return JsonResponse({'result': ERROR, 'message': r'容量不足!'})
 		# 报名题容量检测
 
 		q.count = q.count + 1
@@ -298,7 +299,7 @@ def analyze(request):
 				submit_time = []
 				for x in submit_id:
 					info = SubmitInfo.objects.get(id = x, qid = qid)
-					submit_time.append(info.str(submit_time)[:16])
+					submit_time.append(str(info.submit_time)[:16])
 				s = " ".join(answers)
 				# result['questions'][i]['url'] = draw_wordcloud(s)
 				a,b = word_count(s)
