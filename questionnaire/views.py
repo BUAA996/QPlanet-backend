@@ -411,7 +411,6 @@ def copy_questionnaire(qid, title, to_username):
 def copy_questionnaire_to_self(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
-		#return JsonResponse({'result': ACCEPT})
 		qid = int(data_json['qid'])
 		title = data_json['title']
 		username = request.session.get('user')
@@ -433,9 +432,9 @@ def download(request):
 		name = str(q.id)
 
 		document = Document()
-		Head = document.add_heading("",level=1)
+		Head = document.add_heading("", level = 1)
 		run  = Head.add_run(q.title)
-		run.font.name=u'Cambria'
+		run.font.name = u'Cambria'
 		run._element.rPr.rFonts.set(qn('w:eastAsia'), u'Cambria')
 		run.font.color.rgb = RGBColor(0,0,0)
 		
