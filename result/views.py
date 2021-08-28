@@ -226,12 +226,22 @@ def analyze(request):
 											'type': q.type, 
 											'option': op,
 											'count':[0]*len(op)})
-			else:
+			elif q.type in [COMPLETION, DESCRIPTION]:
 				result['questions'].append({'content': q.content, 'type': q.type})
+			elif q.type == GRADING:
+				lower,upper,bin = string_to_int(q.extra)
+				result['questions'].append({'id': q.id,
+											'content': q.content,
+											'type': q.type, 
+											'option': [i for i in range(1,upper+1)],
+											'count':[0]*upper})
+			else:
+				pass
+				# TODO analyze locations
 		# Put basic question informations
 
 		for i in range(len(questions)):
-			if questions[i].type not in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+			if questions[i].type in [COMPLETION, DESCRIPTION]:
 				answers = [x.answer for x in Submit.objects.filter(problem_id = questions[i].id)]
 				submit_id = [x.sid for x in Submit.objects.filter(problem_id = questions[i].id)]
 				submit_time = []
@@ -252,6 +262,11 @@ def analyze(request):
 					if len(s) == 0 or s[0] == '':
 						continue
 					s = [int(op) for op in s]
+					if questions[i].type == GRADING:
+						s = [i-1 for i in s]
+					# 打分题从1开始,其他选择从0开始
+					# 减去偏移量
+
 					for op in s:
 						result['questions'][i]['count'][op] +=1
 		return JsonResponse(result)
@@ -265,17 +280,18 @@ def cross_analyze(request):
 		t2 = int(data_json['t2'])
 		q1 = Question.objects.get(id = t1)
 		q2 = Question.objects.get(id = t2)
-		option,quota = string_to_list(q1.extra)
-		print(option)
-		print(quota)
+		if q1.type not in [SINGLE_CHOICE, MULTIPLE_CHOICE] and q2.type not in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+			return JsonResponse({'result': ERROR, 'message':r'请重新选择题目!'})
 		
+		option,quota = string_to_list(q1.extra)
 		len1 = len(option)
 		option,quota = string_to_list(q2.extra)
 		len2 = len(option)
+
 		count = [[0 for i in range(len2)] for i in range(len1)]
 		submitinfo = [x for x in SubmitInfo.objects.filter(qid = qid)]
 		total = len(submitinfo)
-		print(len1, len2)
+		
 		for x in submitinfo:
 			s1 = Submit.objects.get(sid = x.id, problem_id = q1.id)
 			s2 = Submit.objects.get(sid = x.id, problem_id = q2.id)
