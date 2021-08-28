@@ -69,6 +69,8 @@ def submit(request):
 				continue
 			lower,upper,requirement = string_to_int(question.extra)
 			ans = i['answer'][0]
+			if question.is_required == False and len(ans) == 0:
+				continue
 			if len(ans)<lower or len(ans)>upper:
 				return JsonResponse({'result': ERROR, 'message':r'填空题长度非法!'})
 			if requirement == PHONE_NUM:
@@ -76,7 +78,13 @@ def submit(request):
 				if pattern.search(phone) == None:
 					return JsonResponse({'result': ERROR, 'message': r'手机号格式非法!'})
 			if requirement == EMAIL_ADRESS:
-				pass
+				if '@' not in ans:
+					return JsonResponse({'result': ERROR, 'message': r'邮箱格式非法!'})
+			if requirement == NUMBER_ONLY:
+				try:
+					a = int(ans)
+				except:
+					return JsonResponse({'result': ERROR, 'message': r'数字格式非法!'})
 		# 填空题合法性检测
 
 		q.count = q.count + 1
