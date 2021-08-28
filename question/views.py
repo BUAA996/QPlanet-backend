@@ -21,10 +21,11 @@ def string_to_int(extra):
     return list(map(int, extra.split(SEPARATOR)))
 
 def answer_to_string(answer):
+    answer = [str(x) for x in answer]
     return SEPARATOR.join(answer)
 
 def string_to_answer(answer):
-    return answer.split(SEPARATOR)
+    return list(answer.split(SEPARATOR))
 
 def save_questions(questions, qid):
     if questions:
@@ -45,9 +46,10 @@ def save_questions(questions, qid):
             question.save()
             if x.get('standard_answer', -1) != -1 and x['standard_answer']['score'] != -1:
                 tmp = x.get('standard_answer')
-                question_id = Question.objects.filter(questionnaire_id = qid, rank = num)
-                StandardAnswer.objects.create(qid = question_id, type = x['type'], score = tmp['score'],
-                    content = answer_to_string(tmp['content']))
+                question_id = Question.objects.get(questionnaire_id = qid, rank = num)
+                question_id = question_id.id
+                std = StandardAnswer(qid = question_id, type = x['type'], content = answer_to_string(tmp['content']), score = int(tmp['score']))
+                std.save()
             num += 1
 
 def delete_questions(qid):
@@ -83,6 +85,8 @@ def get_questions(qid, with_id = True):
             standard_answer = StandardAnswer.objects.filter(qid = x.id)
             d['standard_answer'] = {'content': string_to_answer(standard_answer.content), 
                 'score': standard_answer.score}
+            if x.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+                d['standard_answer']['content'] = [int(x) for x in d['standard_answer']['content']]
         else:
             d['standard_answer'] = {'content': [], 'score': -1}
         tmp.append(d)

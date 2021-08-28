@@ -92,31 +92,45 @@ def submit(request):
 				question = Question.objects.get(id = i['problem_id'])
 				if question.is_essential == True:
 					continue
+				# 基础问题不改分
+
 				if i['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
 					ans = i['answer']
-					stand = StandardAnswer.objects.get(i['problem_id'])
-					std_ans.append({'problem_id': i['problem_id'], 'ans': string_to_answer(stand.content),
-							'type':question.type})
+					stand = StandardAnswer.objects.get(qid = i['problem_id'])
+					std_ans.append({'problem_id': i['problem_id'],
+							'ans': [int (x) for x in string_to_answer(stand.content)],
+							'type':question.type,
+							'score':stand.score,
+							'content':question.content}
+					)
 					# 预处理与标准答案
-
 					if i['type'] == SINGLE_CHOICE:
 						if str(ans[0]) == stand.content:
 							score += stand.score
 						# 单选得分
 					else:
+						ans = [int(x) for x in ans]
 						ans.sort()
 						std = string_to_answer(stand.content)
+						std = [int(x) for x in std]
+						std.sort()
 						if ans == std:
 							score += stand.score
 						elif q.select_less_score == True:
 							count = sum([1 if x in std else 0 for x in ans])
-							if count == len(ans):
+							if count == len(ans) and len(ans)>=1:
 								score += stand.score/2
 						# 多选得分
 				else:
 					ans = i['answer'][0]
-					stand = StandardAnswer.objects.get(i['problem_id'])
+					stand = StandardAnswer.objects.get(qid = i['problem_id'])
 					std = string_to_answer(stand.content)
+					std_ans.append({'problem_id': i['problem_id'],
+							'ans': std,
+							'type':question.type,
+							'score':stand.score,
+							'content':question.content}
+					)
 					if ans in std:
 						score += stand.score
 					# 填空得分
