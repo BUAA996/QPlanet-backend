@@ -62,9 +62,25 @@ def submit(request):
 				return JsonResponse({'result': ERROR, 'message':r'您已填写过该问卷!'})
 		# 身份认证模块
 
+		results = data_json['results']
+		for i in results:
+			question = Question.objects.get(id = i['problem_id'])
+			if question.type != COMPLETION:
+				continue
+			lower,upper,requirement = string_to_int(question.extra)
+			ans = i['answer'][0]
+			if len(ans)<lower or len(ans)>upper:
+				return JsonResponse({'result': ERROR, 'message':r'填空题长度非法!'})
+			if requirement == PHONE_NUM:
+				pattern = re.compile(r'^1(3\d|4[5-9]|5[0-35-9]|6[2567]|7[0-8]|8\d|9[0-35-9])\d{8}$')
+				if pattern.search(phone) == None:
+					return JsonResponse({'result': ERROR, 'message': r'手机号格式非法!'})
+			if requirement == EMAIL_ADRESS:
+				pass
+		# 填空题合法性检测
+
 		q.count = q.count + 1
 		q.save()
-		results = data_json['results']
 		total = SubmitInfo.objects.all().aggregate(Max('id'))
 		if total['id__max'] == None:
 			total = 0
@@ -159,6 +175,7 @@ def submit(request):
 				option,e = string_to_list(question.extra)
 				votes = [0]*len(option)
 				# TODO calculate votes
+
 			return JsonResponse(js)
 			# 投票
 		return JsonResponse({'result': ACCEPT, 'message': r'提交成功!'})
