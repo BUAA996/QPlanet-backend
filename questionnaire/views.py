@@ -48,17 +48,21 @@ def get_total(request):
 	return JsonResponse({'result': ACCEPT, 'message':r'获取成功!', 'total':total, 'submit_total':s_total})
 
 def check_close(q):
-	#TODO calculate the res
+	#已关闭返回1
 	info = Info.objects.get(id = q.id)
 	if info.state != RELEASE:
-		return 0
-	if q.deadline == None:
-		return 0
-	if datetime.now() < q.deadline:
+		return 1
+	if q.deadline == None or datetime.now() < q.deadline:
 		return 0
 	info.state = SAVED
 	info.save()
 	return 1
+
+def check_could_submit(q):
+	if check_close(q):
+		return 0
+	if q.quota == None or q.count < q.quota:
+		return 1
 
 def hash(id):
 	q = Questionnaire.objects.get(id = id)
@@ -66,7 +70,7 @@ def hash(id):
 	q.save()
 	return q.hash
 
-def build_questionnaire(title, description, own, type, deadline, duration, random_order, select_less_score, certification, show_number, questions):
+def build_questionnaire(title, description, own, type, deadline, quota, duration, random_order, select_less_score, certification, show_number, questions):
 	total = Questionnaire.objects.all().aggregate(Max('id'))
 	if total['id__max'] == None:
 		total = 1
@@ -75,7 +79,7 @@ def build_questionnaire(title, description, own, type, deadline, duration, rando
 	Info.objects.create(id = total, state = SAVED)
 	questionnaire = Questionnaire.objects.create(
 		id = total, title = title, description = description, own = own, type = type, 
-		deadline = deadline, duration = duration, count = 0, hash = "", 
+		deadline = deadline, quota = quota, duration = duration, count = 0, hash = "", 
 		random_order = random_order, select_less_score = select_less_score, 
 		certification = certification, show_number = show_number)
 	hash_val = hash(questionnaire.id)
@@ -92,41 +96,27 @@ def create(request):
 		data_json = json.loads(request.body)
 		username = request.session.get('user')
 
-		if data_json['deadline'] == None:
+		if data_json.get('deadline', -1) == -1 or data_json['deadline'] == None:
 			temp = None
 		else:
 			temp = str_to_datetime(data_json['deadline'])
-		id,hash = build_questionnaire(title = data_json['title'],
+		id, hash = build_questionnaire(title = data_json['title'],
 					description = data_json['description'],
 					own = username,
 					type = int(data_json['type']),
 					deadline = temp,
-					# TODO DDL 默认时间设置问题
-					duration = int(data_json.get('duration', 0)),
+					quota = data_json.get('quota', None),
+					duration = int(data_json.get('duration', None)),
 					random_order = data_json.get('random_order', False),
 					select_less_score = data_json.get('select_less_score', False),
 					certification = int(data_json.get('certification', 0)),
 					show_number = data_json.get('show_number', True),
-					questions = data_json['questions']
+					questions = data_json.get('questions', None)
 			)
 
 		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!', 'id': id, 'hash': hash})
 	else:
 		print('IP is', request.META.get('HTTP_X_REAL_IP'))
-		'''
-		if data_json.get('title', -1) != -1 and data_json.get('description', -1) != -1 \
-			and data_json.get('type', -1) != -1 and data_json.get('limit_time', -1) != -1 \
-			and data_json.get('questions', -1) != -1 :
-			for x in data_json['questions']:
-				if x.get('type', -1) == -1 or x.get('content', -1) == -1 or x.get('is_required', -1) == -1 \
-					or x.get('description', -1) == -1:
-					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-				if (x.get('type') in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) == -1) \
-					or (x.get('type') not in [SINGLE_CHOICE, MULTIPLE_CHOICE] and x.get('option', -1) != -1):
-					return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-		else:
-			return JsonResponse({'result': ERROR, 'message': FORM_ERROR})
-		'''
 
 @csrf_exempt
 def list(request):
@@ -143,8 +133,8 @@ def list(request):
 			check_close(x)
 			info = Info.objects.get(id = x.id)
 			d = {'id': x.id, 'title': x.title, 'description': x.description, 'type': x.type,
-				'count': x.count, 'hash': x.hash, 'status': info.state, 'quota': x.quota, 
-				'create_time': datetime_to_str(x.create_time), 
+				'count': x.count, 'hash': x.hash, 'state': info.state, 'quota': x.quota, 
+				'create_time': datetime_to_str(x.create_time), 'deadline': x.deadline,
 				'upload_time': datetime_to_str(info.upload_time)
 			}
 			# dt_time = x.create_time.strftime('%Y-%m-%d %H:%M:%S')
@@ -236,92 +226,7 @@ def close(request):
 		info.save()
 
 		return JsonResponse({'result': ACCEPT, 'message': r'已停止发布!'})
-'''
-@csrf_exempt
-def get_sorted_questionnaires(request):
-	if request.method == 'POST':
-		if request.session.get('is_login') != True:
-			return JsonResponse({'result': ERROR, 'message': r'您还未登录!'})
-		username = request.session.get('user')
-		l = [x for x in Questionnaire.objects.filter(own = username)]
-		data_json = json.loads(request.body)
-		sort_method = data_json['sort_method']
-		res_tmp=[]
-		if sort_method == 'create_time_ascend': # 创建时间升序
-			l.sort(key = lambda x: x.id)
-			for x in l:
-				info = Info.objects.get(id = x.id)
-				if info.state == DELETED:
-					continue
-				d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-					'count':x.count, 'hash':x.hash, 'state':info.state,
-					'create_time':x.create_time[:16], 'upload_time':info.upload_time}
-				res_tmp.append(d)
-			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
-		elif sort_method == 'create_time_descend': # 创建时间降序
-			l.sort(key = lambda x: x.id, reverse = True)
-			for x in l:
-				info = Info.objects.get(id = x.id)
-				if info.state == DELETED:
-					continue
-				d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-					'count':x.count, 'hash':x.hash, 'state':info.state,
-					'create_time':x.create_time[:16], 'upload_time':info.upload_time}
-				res_tmp.append(d)
-			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
-		elif sort_method == 'upload_time_ascend': # 发布时间升序
-			tmp_list = []
-			for x in l:
-				info = Info.objects.get(id = x.id)
-				tmp_list.append(info)
-			tmp_list.sort(key = lambda x: x.upload_time)
-			for x in tmp_list:
-				questionnaire = Questionnaire.objects.get(id = x.id)
-				if x.state == DELETED:
-					continue
-				d = {'id':x.id, 'title':questionnaire.title, 'description':questionnaire.description, 
-					'type':questionnaire.type, 'count':questionnaire.count, 'hash':questionnaire.hash, 
-					'state':x.state, 'create_time':questionnaire.create_time[:16], 'upload_time':x.upload_time}
-				res_tmp.append(d)
-			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
-		elif sort_method == 'upload_time_descend': # 发布时间降序
-			tmp_list = []
-			for x in l:
-				info = Info.objects.get(id = x.id)
-				tmp_list.append(info)
-			tmp_list.sort(key = lambda x: x.upload_time, reverse = True)
-			for x in tmp_list:
-				questionnaire = Questionnaire.objects.get(id = x.id)
-				if x.state == DELETED:
-					continue
-				d = {'id':x.id, 'title':questionnaire.title, 'description':questionnaire.description, 
-					'type':questionnaire.type, 'count':questionnaire.count, 'hash':questionnaire.hash, 
-					'state':x.state, 'create_time':questionnaire.create_time[:16], 'upload_time':x.upload_time}
-				res_tmp.append(d)
-			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
-		elif sort_method == 'count_ascend': # 回收量升序
-			l.sort(key = lambda x: x.count)
-			for x in l:
-				info = Info.objects.get(id = x.id)
-				if info.state == DELETED:
-					continue
-				d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-					'count':x.count, 'hash':x.hash, 'state':info.state,
-					'create_time':x.create_time[:16], 'upload_time':info.upload_time}
-				res_tmp.append(d)
-			return JsonResponse({'result': ACCEPT, 'message': res_tmp})
-		elif sort_method == 'count_descend': # 回收量降序
-				l.sort(key = lambda x: x.count, reverse = True)
-				for x in l:
-					info = Info.objects.get(id = x.id)
-					if info.state == DELETED:
-						continue
-					d = {'id':x.id, 'title':x.title, 'description':x.description, 'type':x.type,
-						'count':x.count, 'hash':x.hash, 'state':info.state,
-						'create_time':x.create_time[:16], 'upload_time':info.upload_time}
-					res_tmp.append(d)
-				return JsonResponse({'result': ACCEPT, 'message': res_tmp})
-'''
+
 @csrf_exempt
 def search_questionnaires(request):
 	if request.method == 'POST':

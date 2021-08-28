@@ -33,7 +33,8 @@ def save_questions(questions, qid):
         for x in questions:
             question = Question(
                 questionnaire_id = qid, rank = num, type = x['type'], content = x['content'], 
-                is_required = x['is_required'], description = x['description']
+                is_required = x['is_required'], is_essential = x.get('is_essential', None),
+                description = x.get('description', None)
             )
             if x['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
                 question.extra = list_to_string(x['option'], x['quota'])
@@ -41,10 +42,8 @@ def save_questions(questions, qid):
                 question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])
             elif x['type'] == GRADING:
                 question.extra = int_to_string(0, x['upper'], 0)
-            if x.get('is_essential', -1) != -1:
-                question.is_essential = x['is_essential']
             question.save()
-            if x.get('standard_answer', -1) != -1 and x['standard_answer']['score'] != -1:
+            if x.get('standard_answer', -1) != -1 and x['standard_answer']['score'] != -1:  # for copy
                 tmp = x.get('standard_answer')
                 question_id = Question.objects.get(questionnaire_id = qid, rank = num)
                 question_id = question_id.id
@@ -56,7 +55,7 @@ def delete_questions(qid):
     questions = Question.objects.filter(questionnaire_id = qid)
     for question in questions:
         StandardAnswer.objects.filter(qid = question.id).delete()
-    Question.objects.filter(questionnaire_id = qid).delete()
+        question.delete()
 
 def get_questions(qid, with_id = True):
     questions = [x for x in Question.objects.filter(questionnaire_id = qid)]
@@ -64,7 +63,7 @@ def get_questions(qid, with_id = True):
     tmp = []
     for x in questions:
         d = {'type': x.type, 'content': x.content, 'is_required': x.is_required, 
-            'description': x.description, 'is_essential': x.is_essential}
+            'is_essential': x.is_essential, 'description': x.description}
         if with_id:
             d['id'] = x.id
         if x.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
@@ -81,6 +80,12 @@ def get_questions(qid, with_id = True):
             d['lower'] = res[0]
             d['upper'] = res[1]
             d['requirement'] = res[2]
+        elif x.type == GRADING:
+            d['option'] = []
+            d['quota'] = []
+            d['lower'] = -1
+            d['upper'] = -1
+            d['requirement'] = -1
         if StandardAnswer.objects.filter(qid = x.id).exists():
             standard_answer = StandardAnswer.objects.filter(qid = x.id)
             d['standard_answer'] = {'content': string_to_answer(standard_answer.content), 
@@ -98,11 +103,16 @@ def update_questions(questions):
         question = Question.objects.get(id = x['id'])
         question.content= x['content']
         question.is_required = x['is_required']
-        question.description = x['description']
+        if x.get('is_essential', -1) != -1:
+            question.is_essential = x['is_essential']
+        if x.get('description', -1) != -1:
+            question.description = x['description']
         question.rank = num
         if question.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
             question.extra = list_to_string(x['option'], x['quota'])
-        elif type in [COMPLETION, DESCRIPTION, GRADING]:
+        elif question.type in [COMPLETION, DESCRIPTION]:
             question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])
+        elif question.type == GRADING:
+            question.extra = int_to_string(0, x['upper'], 0)
         question.save()
         num += 1
