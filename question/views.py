@@ -5,6 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 from QPlanet.values import *
 from QPlanet.settings import *
 from result.models import *
+from django.http import JsonResponse
+import json
 
 def list_to_string(option, quota):
     return SEPARATOR.join(option + list(map(str, quota)))
@@ -50,6 +52,13 @@ def count_surplus(question_id):
     for i in range(len):
         res[i] = quota[i] - submission[i]
     return res
+
+@csrf_exempt
+def surplus_quota(request):
+    if request.method == 'POST':
+        data_json = json.loads(request.body)
+        qid = int(data_json['qid'])
+        return JsonResponse({'result': ACCEPT, 'surplus': count_surplus(qid)})
 
 def save_questions(questions, qid):
     if questions:
