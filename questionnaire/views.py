@@ -137,9 +137,7 @@ def list(request):
 				'create_time': datetime_to_str(x.create_time), 'deadline': x.deadline,
 				'upload_time': datetime_to_str(info.upload_time)
 			}
-			# dt_time = x.create_time.strftime('%Y-%m-%d %H:%M:%S')
 			d['create_time_int'] = int(x.create_time.timestamp())
-			# dt_time = x.upload_time.strftime('%Y-%m-%d %H:%M:%S')
 			d['upload_time_int'] = int(info.upload_time.timestamp())
 			result['questionnaires'].append(d)
 		return JsonResponse(result)
@@ -237,7 +235,6 @@ def search_questionnaires(request):
 		data_json = json.loads(request.body)
 		
 		q = data_json['query']
-
 		res_tmp = []
 
 		if not q.isdigit(): # 非仅数字，查标题
@@ -251,13 +248,11 @@ def search_questionnaires(request):
 			info = Info.objects.get(id = x.id)
 			d = {'id': x.id, 'title': x.title, 'description': x.description, 'type': x.type,
 				'count': x.count, 'hash': x.hash, 'state': info.state, 'quota': x.quota, 
-				'create_time': datetime_to_str(x.create_time), 
+				'create_time': datetime_to_str(x.create_time), 'deadline': x.deadline,
 				'upload_time': datetime_to_str(info.upload_time)
 			}
-			dt_time = x.create_time.strftime('%Y-%m-%d %H:%M:%S')
-			d['create_time_int'] = int(dt_time.timestamp())
-			dt_time = x.upload_time.strftime('%Y-%m-%d %H:%M:%S')
-			d['upload_time_int'] = int(dt_time.timestamp())
+			d['create_time_int'] = int(x.create_time.timestamp())
+			d['upload_time_int'] = int(x.upload_time.timestamp())
 			res_tmp.append(d)
 		return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 
