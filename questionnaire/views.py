@@ -395,7 +395,7 @@ def view(request):
 				'description':q.description,
 				'type': q.type,
 				'show_number': q.show_number,
-				'deadline': q.deadline,
+				'deadline': datetime_to_str(q.deadline),
 				'quota': q.quota,
 				'random_order': q.random_order,
 				'select_less_score': q.select_less_score,
