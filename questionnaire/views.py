@@ -498,11 +498,14 @@ def copy_questionnaire(qid, title, to_username):
 @csrf_exempt
 def copy_questionnaire_to_self(request):
 	if request.method == 'POST':
-		data_json = json.loads(request.body)
-		qid = data_json['qid']
-		title = data_json['title']
-		username = request.session.get('user')
-		res = copy_questionnaire(qid, title, username)
+		
+		#data_json = json.loads(request.body)
+		#return JsonResponse({'result': ACCEPT})
+		#qid = data_json['qid']
+		#title = data_json['title']
+		#username = request.session.get('user')
+		#res = copy_questionnaire(qid, title, username)
+		res = copy_questionnaire(31, "test", "admin")
 		result = {'result': ACCEPT, 'copy_id': res[0], 'copy_hash': res[1]}
 		return JsonResponse(result)
 

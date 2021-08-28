@@ -44,7 +44,7 @@ def save_questions(questions, qid):
             if x.get('is_essential', -1) != -1:
                 question.is_essential = x['is_essential']
             question.save()
-            if x.get('standard_answer', -1) != -1:
+            if x.get('standard_answer', -1) != -1 and x['standard_answer']['score'] != -1:
                 tmp = x.get('standard_answer')
                 question_id = Question.objects.filter(questionnaire_id = qid, rank = num)
                 StandardAnswer.objects.create(qid = question_id, type = x['type'], score = tmp['score'],
