@@ -242,7 +242,7 @@ def download(request):
 			sh.write(i+1, 0, i)
 			sh.write(i+1, 1, submits[i].submit_time.strftime('%Y-%m-%d %H:%M:%S'))
 			for j in range(len(answers)):
-				s = string_to_list(answers[j].answer)
+				s = string_to_answer(answers[j].answer)
 				if len(s) == 0 or s[0] == "":
 					continue
 				p = Question.objects.get(id = answers[j].problem_id)
