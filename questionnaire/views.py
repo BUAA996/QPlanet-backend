@@ -24,6 +24,8 @@ from docx2pdf import convert
 from random import randint as rand
 
 def datetime_to_str(time):
+	if time == None:
+		return None
 	return time.strftime('%Y-%m-%d %H:%M')
 
 def str_to_datetime(str):
