@@ -260,7 +260,7 @@ def search_questionnaires(request):
 				'upload_time': datetime_to_str(info.upload_time)
 			}
 			d['create_time_int'] = int(x.create_time.timestamp())
-			d['upload_time_int'] = int(x.upload_time.timestamp())
+			d['upload_time_int'] = int(info.upload_time.timestamp())
 			res_tmp.append(d)
 		return JsonResponse({'result': ACCEPT, 'message': res_tmp})
 
