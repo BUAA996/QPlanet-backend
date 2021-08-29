@@ -15,7 +15,7 @@ class Questionnaire(models.Model):
 
 	quota = models.IntegerField(null = True, blank = True)
 	count = models.IntegerField()
-	hash = models.CharField(max_length = 20)
+	hash = models.CharField(max_length = 40)
 
 	random_order = models.BooleanField(default = False)
 	select_less_score = models.BooleanField(default = False)  #  少选得分
