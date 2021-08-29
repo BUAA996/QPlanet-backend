@@ -69,6 +69,10 @@ def save_questions(questions, qid):
                 description = x.get('description', None)
             )
             if x['type'] in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+                if x.get('quota', -1) == -1:
+                    x['quota'] = [-1 for i in range(len(x['option']))]
+                if x['quota'].count(0) == len(x['quota']):
+                    x['quota'] = [-1 for i in range(len(x['quota']))]
                 question.extra = list_to_string(x['option'], x['quota'])
             elif x['type'] in [COMPLETION, DESCRIPTION]:
                 question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])

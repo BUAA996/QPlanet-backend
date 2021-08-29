@@ -208,3 +208,10 @@ else:
 __stopwords = set()
 STOPWORDS = [line.strip() for line in open('stop.txt','r', encoding='utf-8').readlines()]
 __stopwords.update(STOPWORDS)
+
+CAPTCHA_IMAGE_SIZE = (178, 56)
+
+CAPTCHA_NOISE_FUNCTIONS = (
+	'captcha.helpers.noise_null',
+	'captcha.helpers.noise_dots',
+)

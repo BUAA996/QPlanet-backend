@@ -71,6 +71,8 @@ def check_could_submit(q):
 def hash(id):
 	q = Questionnaire.objects.get(id = id)
 	q.hash = ''.join(random.sample(string.ascii_letters + string.digits, 7)) + str(q.type)
+	while Questionnaire.objects.filter(hash = q.hash).exists == True:
+		q.hash = ''.join(random.sample(string.ascii_letters + string.digits, 7)) + str(q.type)
 	q.save()
 	return q.hash
 
@@ -375,6 +377,8 @@ def modify_questionnaire(request):
 			if data_json['deadline'] != None:
 				temp = str_to_datetime(data_json['deadline'])
 				q.deadline = temp
+			else:
+				q.deadline = None
 			q.type = data_json['type']
 			q.title = data_json['title']
 			q.description = data_json['description']
@@ -449,7 +453,7 @@ def download(request):
 				else:
 					s += r'(多选) '
 				paragraph = document.add_paragraph(s + x.content)
-				options,quota = string_to_list(x.option)
+				options,quota = string_to_list(x.extra)
 				for j in range(len(options)):
 					s = chr(j + 65) + '. '
 					s = s + options[j]
