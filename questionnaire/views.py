@@ -22,6 +22,7 @@ from docx.oxml.ns import qn
 from docx.shared import Pt,RGBColor
 from docx2pdf import convert
 from random import randint as rand
+import uuid
 
 def datetime_to_str(time):
 	if time == None:
@@ -70,7 +71,8 @@ def check_could_submit(q):
 
 def hash(id):
 	q = Questionnaire.objects.get(id = id)
-	q.hash = ''.join(random.sample(string.ascii_letters + string.digits, 7)) + str(q.type)
+	#q.hash = ''.join(random.sample(string.ascii_letters + string.digits, 7)) + str(q.type)
+	q.hash = uuid.uuid4().hex + str(q.type)
 	q.save()
 	return q.hash
 
