@@ -273,7 +273,7 @@ def check_type(request):
 			q = Questionnaire.objects.get(hash = hash)
 			if check_close(q) == 1:
 				return JsonResponse({'result': ERROR, 'message':r'问卷已关闭!'})
-			return JsonResponse({'result': ACCEPT, 'message': r'获取成功!', 'requirement': int(hash[-1])})
+			return JsonResponse({'result': ACCEPT, 'message': r'获取成功!', 'requirement': q.certification})
 	else:
 		print('IP is', request.META.get('HTTP_X_REAL_IP'))
 
@@ -372,11 +372,9 @@ def modify_questionnaire(request):
 			or (q.type in [1, 2, 3, 4] and data_json['type'] in [1, 2, 3, 4]) \
 			or (q.type in [6, 7, 8, 9] and data_json['type'] in [6, 7, 8, 9]):
 
-			if data_json['deadline'] == None:
-				temp = None
-			else:
+			if data_json['deadline'] != None:
 				temp = str_to_datetime(data_json['deadline'])
-			q.deadline = temp
+				q.deadline = temp
 			q.type = data_json['type']
 			q.title = data_json['title']
 			q.description = data_json['description']
