@@ -37,7 +37,7 @@ def check_captcha(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
 		phone = str(data_json['phone'])
-		captcha = data_json['captcha']
+		captcha = str(data_json['captcha'])
 		if Phone.objects.filter(phone_number = phone, captcha = captcha).exists() == False:
 			return JsonResponse({'result': ERROR, 'message': r'验证码输入错误!'})
 		p = Phone.objects.get(phone_number = phone, captcha = captcha)
@@ -198,7 +198,11 @@ def submit(request):
 				if question.type not in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
 					continue
 				votes = count_submissions(question.id)
-				js['votes'].append({'problem_id': question.id, 'result': votes})
+				option,quota = string_to_list(question.extra)
+				js['votes'].append({'problem_id': question.id,
+									'content':question.content,
+									'option': option,
+									'result': votes})
 			return JsonResponse(js)
 			# 投票
 		return JsonResponse({'result': ACCEPT, 'message': r'提交成功!'})
@@ -214,6 +218,8 @@ def download(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
 		hash = data_json['hash']
+		type = int(data_json.get('type', 0))
+
 		if Questionnaire.objects.filter(hash = hash).exists() == False:
 			return JsonResponse({'result': ERROR, 'message': r'问卷不存在!'})
 		q = Questionnaire.objects.get(hash = hash)
@@ -239,10 +245,15 @@ def download(request):
 				s = string_to_list(answers[j].answer)
 				if len(s) == 0 or s[0] == "":
 					continue
+				p = Question.objects.get(id = answers[j].problem_id)
+				option,quota = string_to_list(p.extra)
 				if answers[j].type == SINGLE_CHOICE:
-					ans = chr(int(s[0]) + 65)
+					if type == 0:
+						ans = chr(int(s[0]) + 65)
+					else:
+						ans = option[int(s[0])]
 				elif answers[j].type == MULTIPLE_CHOICE:
-					s = [chr(int(x) + 65) for x in s]
+					s = [option[int(x)] for x in s]
 					ans = ','.join(s)
 				else:
 					ans = s[0]
