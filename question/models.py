@@ -16,3 +16,7 @@ class StandardAnswer(models.Model):
 	type = models.IntegerField()
 	content = models.TextField()
 	score = models.IntegerField()
+
+class Jump(models.Model):
+	qid = models.IntegerField()
+	next = models.TextField(null = True, blank = True)

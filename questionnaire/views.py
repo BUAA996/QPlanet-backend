@@ -10,6 +10,7 @@ from QPlanet.values import *
 from QPlanet.settings import *
 from question.views import *
 from result.views import *
+from question.jump import *
 import qrcode
 import json
 from datetime import datetime, timedelta
@@ -75,6 +76,13 @@ def hash(id):
 	q.hash = uuid.uuid4().hex + str(q.type)
 	q.save()
 	return q.hash
+
+@csrf_exempt
+def save_logic(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		save_jump(data_json['questions'])
+		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!'})
 
 def build_questionnaire(title, description, own, type, deadline, quota, duration, random_order, select_less_score, certification, show_number, questions):
 	total = Questionnaire.objects.all().aggregate(Max('id'))
@@ -409,7 +417,8 @@ def modify_questionnaire(request):
 def copy_questionnaire(qid, title, to_username):
 	q = Questionnaire.objects.get(id = qid)
 	questions = get_questions(qid, False)
-	res = build_questionnaire(title, q.description, to_username, q.type, q.deadline, q.duration, q.random_order, q.select_less_score, q.certification, q.show_number, questions)
+	res = build_questionnaire(title, q.description, to_username, q.type, q.deadline, q.quota, q.duration, q.random_order,
+		q.select_less_score, q.certification, q.show_number, questions)
 	return res
 
 @csrf_exempt

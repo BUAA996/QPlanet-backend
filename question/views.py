@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from QPlanet.values import *
 from QPlanet.settings import *
 from result.models import *
+from question.jump import *
 from django.http import JsonResponse
 import json
 
@@ -110,6 +111,8 @@ def get_questions(qid, with_id = True):
             d['lower'] = -1
             d['upper'] = -1
             d['requirement'] = -1
+            if questionnaire.type == NORMAL:
+                d['logic'] = load_jump(x.id)
             if questionnaire.type == SIGNUP and res[1][0] > 0:
                 d['surplus'] = count_surplus(x.id)
             if questionnaire.type in [VOTING_BEFORE, VOTING_BOTH]:
