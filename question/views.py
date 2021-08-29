@@ -10,6 +10,9 @@ from django.http import JsonResponse
 import json
 
 def list_to_string(option, quota):
+    for i in range(len(quota)):
+        if quota[i] == None or quota[i] == 'None':
+            quota[i] = 0
     return SEPARATOR.join(option + list(map(str, quota)))
 
 def string_to_list(extra):
@@ -29,6 +32,8 @@ def answer_to_string(answer):
     return SEPARATOR.join(answer)
 
 def string_to_answer(answer):
+    if answer == '':
+        return []
     return list(answer.split(SEPARATOR))
 
 def count_submissions(pid):
@@ -78,13 +83,13 @@ def save_questions(questions, qid):
             elif x['type'] in [COMPLETION, DESCRIPTION]:
                 question.extra = int_to_string(x['lower'], x['upper'], x['requirement'])
             elif x['type'] == GRADING:
-                question.extra = int_to_string(0, x['upper'], 0)
+                question.extra = int_to_string(0, 5, 0)
             question.save()
             if x.get('standard_answer', -1) != -1 and x['standard_answer']['score'] != -1:  # for copy
                 tmp = x.get('standard_answer')
                 question_id = Question.objects.get(questionnaire_id = qid, rank = num)
                 question_id = question_id.id
-                std = StandardAnswer(qid = question_id, type = x['type'], content = answer_to_string(tmp['content']), score = int(tmp['score']))
+                std = StandardAnswer(qid = question_id, type = x['type'], content = answer_to_string(tmp['content']), score = int(float(tmp['score'])))
                 std.save()
             num += 1
 
@@ -124,21 +129,27 @@ def get_questions(qid, with_id = True):
             d['lower'] = res[0]
             d['upper'] = res[1]
             d['requirement'] = res[2]
-        elif x.type == GRADING:
+            if questionnaire.type == NORMAL:
+                d['logic'] = load_jump(x.id)
+        elif x.type == LOCATION:
             d['option'] = []
             d['quota'] = []
             d['lower'] = -1
             d['upper'] = -1
             d['requirement'] = -1
+        if questionnaire.type == NORMAL:
+            d['logic'] = load_jump(x.id)
         if StandardAnswer.objects.filter(qid = x.id).exists() and SIGNUP <= questionnaire.type <= TESTING_NO:
             standard_answer = StandardAnswer.objects.get(qid = x.id)
             d['standard_answer'] = {'content': string_to_answer(standard_answer.content), 
                 'score': standard_answer.score}
             if x.type in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
-                print(qid)
-                d['standard_answer']['content'] = [int(x) for x in d['standard_answer']['content']]
+                if d['standard_answer']['content'] == ['']:
+               	    d['standard_answer']['content'] = []
+                else:
+               	    d['standard_answer']['content'] = [int(x) for x in d['standard_answer']['content']]
         else:
-            d['standard_answer'] = {'content': [], 'score': -1}
+            d['standard_answer'] = {'content': [], 'score': 0}
         tmp.append(d)
     return tmp
 

@@ -6,7 +6,6 @@ from QPlanet.settings import *
 from random import randint as rand
 
 def send_code(phone):
-	# TODO check phone
 	credentials = AccessKeyCredential(KEY_ID, KEY_SECRET)
 	# use STS Token
 	# credentials = StsTokenCredential('<your-access-key-id>', '<your-access-key-secret>', '<your-sts-token>')

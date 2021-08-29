@@ -83,6 +83,8 @@ def save_logic(request):
 		data_json = json.loads(request.body)
 		save_jump(data_json['questions'])
 		return JsonResponse({'result': ACCEPT, 'message': r'保存成功!'})
+	else:
+		print('IP is', request.META.get('HTTP_X_REAL_IP'))
 
 def build_questionnaire(title, description, own, type, deadline, quota, duration, random_order, select_less_score, certification, show_number, questions):
 	total = Questionnaire.objects.all().aggregate(Max('id'))
@@ -351,8 +353,13 @@ def fill(request):
 		if q.random_order == True:
 			a = result['questions']
 			l = len(a)
-			# TODO set random seed
-			random.seed(1)
+			ip = request.META.get('HTTP_X_REAL_IP')
+			seed = ip[-1]
+			if 48 <= ord(seed) <= 57:
+				seed = int(seed)
+			else:
+				seed = 1
+			random.seed(seed)
 			for i in range(30):
 				x = rand(0, l-1)
 				y = rand(0, l-1)
@@ -387,14 +394,17 @@ def modify_questionnaire(request):
 				q.deadline = temp
 			else:
 				q.deadline = None
-			q.type = data_json['type']
+			q.type = int(data_json['type'])
 			q.title = data_json['title']
 			q.description = data_json['description']
 			q.duration = data_json.get('duration', None)
 			q.random_order = data_json['random_order']
 			q.certification = data_json['certification']
 			q.show_number = data_json['show_number']
+			if data_json.get('quota', -1) != -1:
+				q.quota = int(data_json['quota'])
 			q.state = SAVED
+			
 			q.save()
 			questions = data_json['questions']
 
@@ -481,13 +491,14 @@ def download(request):
 				paragraph = document.add_paragraph("\n")
 			elif x.type == GRADING:
 				s = str(count) + r".(打分) "
-				# TODO add more detail
-				paragraph = document.add_paragraph(s + x.content)
+				paragraph = document.add_paragraph(s + x.content + '(1~5星)')
 				paragraph = document.add_paragraph(r'___________________')
+				paragraph = document.add_paragraph("\n")
 			else:
 				s = str(count) + r".(定位) "
 				paragraph = document.add_paragraph(s + x.content)
 				paragraph = document.add_paragraph(r'___________________')
+				paragraph = document.add_paragraph("\n")
 			count += 1
 		
 		document.save('img/' + name + '.docx')

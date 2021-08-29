@@ -54,13 +54,14 @@ def submit(request):
 		q = Questionnaire.objects.get(id = qid)
 		author = ""
 		
-		if request.session.get('is_login') == True and q.certification == EMAIL_ADRESS:
+		if request.session.get('is_login') == True and q.certification == EMAIL_CERTIFICATION:
 			if SubmitInfo.objects.filter(author = request.session.get('user'), qid = q.id).exists() == True:
 				return JsonResponse({'result': ERROR, 'message':r'您已填写过该问卷!'})
 			author = request.session.get('user')
 		elif phone != '':
 			if Phone.objects.filter(phone_number = phone, qid = q.id):
 				return JsonResponse({'result': ERROR, 'message':r'您已填写过该问卷!'})
+			author = phone
 		# 身份认证模块
 		
 		results = data_json['results']
@@ -88,19 +89,26 @@ def submit(request):
 				except:
 					return JsonResponse({'result': ERROR, 'message': r'数字格式非法!'})
 		# 填空题合法性检测
-
 		if q.type == SIGNUP:
+			if q.quota != None:
+				submit = [1 for x in SubmitInfo.objects.filter(qid = q.id)]
+				if sum(submit) >= q.quota:
+					return JsonResponse({'result': ERROR, 'message': r'余量不足!'})
 			for i in results:
 				question = Question.objects.get(id = i['problem_id'])
+				if question.type not in [SINGLE_CHOICE, MULTIPLE_CHOICE]:
+					continue
 				option,quota = string_to_list(question.extra)
 				if quota.count(-1) == len(option):
 					continue
 				res = count_surplus(question.id)
 				ans = answer_to_string(i['answer'])
 				ans = [int(x) for x in ans]
+				print(res)
+				print(ans)
 				for x in ans:
 					if res[x] <= 0:
-						return JsonResponse({'result': ERROR, 'message': r'容量不足!'})
+						return JsonResponse({'result': ERROR, 'message': r'余量不足!'})
 		# 报名题容量检测
 		
 		q.count = q.count + 1
@@ -145,7 +153,7 @@ def submit(request):
 					)
 					# 预处理与标准答案
 					if i['type'] == SINGLE_CHOICE:
-						if str(ans[0]) == stand.content:
+						if int(ans[0]) in [int (x) for x in string_to_answer(stand.content)]:
 							score += stand.score
 						# 单选得分
 					else:
@@ -235,12 +243,17 @@ def download(request):
 			if i == 0:
 				sh.write(0, 0, r'提交ID')
 				sh.write(0, 1, r'提交时间')
+				sh.write(0, 2, r'提交者')
 				for j in range(len(answers)):
 					p = Question.objects.get(id = answers[j].problem_id)
-					sh.write(0, j+2, p.content)
+					sh.write(0, j+3, p.content)
 				# Print the title
 			sh.write(i+1, 0, i)
 			sh.write(i+1, 1, submits[i].submit_time.strftime('%Y-%m-%d %H:%M:%S'))
+			if submits[i].author != None:
+				sh.write(i+1, 2, submits[i].author)
+			else:
+				sh.write(i+1, 2, '/')
 			for j in range(len(answers)):
 				s = string_to_answer(answers[j].answer)
 				if len(s) == 0 or s[0] == "":
@@ -257,7 +270,7 @@ def download(request):
 					ans = ','.join(s)
 				else:
 					ans = s[0]
-				sh.write(i+1, j+2, ans)
+				sh.write(i+1, j+3, ans)
 		
 		name = 'img/' + str(qid) + '.xls'
 		book.save(name)
@@ -300,9 +313,6 @@ def analyze(request):
 											'type': q.type, 
 											'option': [i for i in range(1,upper+1)],
 											'count':[0]*upper})
-			else:
-				pass
-				# TODO analyze locations
 		# Put basic question informations
 
 		for i in range(len(questions)):
@@ -310,13 +320,18 @@ def analyze(request):
 				answers = [x.answer for x in Submit.objects.filter(problem_id = questions[i].id)]
 				submit_id = [x.sid for x in Submit.objects.filter(problem_id = questions[i].id)]
 				submit_time = []
+				authors = []
 				for x in submit_id:
 					info = SubmitInfo.objects.get(id = x, qid = qid)
 					submit_time.append(str(info.submit_time)[:16])
+					if info.author == None or info.author == "":
+						authors.append("匿名")
+					else:
+						authors.append(info.author)
 				if questions[i].type == LOCATION:
 					result['questions'][i]['all'] = answers
 					result['questions'][i]['submit_time'] = submit_time
-					continue
+					result['questions'][i]['authors'] = authors
 				# 打分题不做处理
 
 				s = " ".join(answers)
@@ -326,6 +341,7 @@ def analyze(request):
 				result['questions'][i]['count'] = b
 				result['questions'][i]['all'] = answers
 				result['questions'][i]['submit_time'] = submit_time
+				result['questions'][i]['authors'] = authors
 			elif questions[i].type in [SINGLE_CHOICE, MULTIPLE_CHOICE, GRADING]:
 				all = [x for x in Submit.objects.filter(problem_id = questions[i].id)]
 				for x in all:
