@@ -222,6 +222,51 @@ def delete_result(qid):
 		x.delete()
 
 @csrf_exempt
+def get_total(request):
+	if request.method == 'POST':
+		data_json = json.loads(request.body)
+		hash = data_json['hash']
+		q = Questionnaire.objects.get(hash = hash)
+		column = ["提交ID", "提交时间", "提交者"]
+		rows = []
+		submits = [x for x in SubmitInfo.objects.filter(qid = q.id)]
+		submits.sort(key = lambda x: x.submit_time)
+		for i in range(len(submits)):
+			answers = [x for x in Submit.objects.filter(sid = submits[i].id)]
+			answers.sort(key = lambda x: x.problem_id)
+			if i == 0:
+				for j in range(len(answers)):
+					p = Question.objects.get(id = answers[j].problem_id)
+					column.append(p.content)
+				# Print the title
+			row = []
+			row.append(str(i+1))
+			row.append(submits[i].submit_time.strftime('%Y-%m-%d %H:%M:%S'))
+			if submits[i].author != None:
+				row.append(submits[i].author)
+			else:
+				row.append('/')
+			for j in range(len(answers)):
+				s = string_to_answer(answers[j].answer)
+				if len(s) == 0 or s[0] == "":
+					continue
+				p = Question.objects.get(id = answers[j].problem_id)
+				option, quota = string_to_list(p.extra)
+				if answers[j].type == SINGLE_CHOICE:
+					if type == 0:
+						ans = chr(int(s[0]) + 65)
+					else:
+						ans = option[int(s[0])]
+				elif answers[j].type == MULTIPLE_CHOICE:
+					s = [option[int(x)] for x in s]
+					ans = ','.join(s)
+				else:
+					ans = s[0]
+				row.append(ans)
+			rows.append(row)
+		return JsonResponse({'result': ACCEPT, 'column': column, 'row': rows})
+
+@csrf_exempt
 def download(request):
 	if request.method == 'POST':
 		data_json = json.loads(request.body)
