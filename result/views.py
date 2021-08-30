@@ -263,6 +263,7 @@ def get_total(request):
 				else:
 					ans = s[0]
 				row.append(ans)
+			rows.append(row)
 		return JsonResponse({'result': ACCEPT, 'column': column, 'row': rows})
 
 @csrf_exempt
