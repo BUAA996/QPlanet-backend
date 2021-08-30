@@ -17,7 +17,6 @@ def register(request):
 	if request.method == 'POST':
 		if request.session.get('is_login') == True:
 			return JsonResponse({'result': ERROR, 'message': r'已登录!'})
-		return JsonResponse({'result': ERROR, 'message': r'没做完呢!别看了'})
 		data_json = json.loads(request.body)
 		username = data_json.get('username')
 		password1 = data_json.get('password1')
