@@ -8,4 +8,5 @@ urlpatterns = [
 	path('analyze/', analyze),
 	path('download/', download),
 	path('cross_analyze/', cross_analyze),
+	path('get_total/', get_total)
 ]
