@@ -19,3 +19,4 @@ questionnaire/migrations
 result/migrations
 log.txt
 nohup.out
+*.yaml

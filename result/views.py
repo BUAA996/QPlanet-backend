@@ -227,17 +227,19 @@ def get_total(request):
 		data_json = json.loads(request.body)
 		hash = data_json['hash']
 		q = Questionnaire.objects.get(hash = hash)
-		column = ["提交ID", "提交时间", "提交者"]
+		column = ["编号", "提交时间", "提交者"]
 		rows = []
 		submits = [x for x in SubmitInfo.objects.filter(qid = q.id)]
 		submits.sort(key = lambda x: x.submit_time)
+		submits.reverse()
+		
 		for i in range(len(submits)):
 			answers = [x for x in Submit.objects.filter(sid = submits[i].id)]
 			answers.sort(key = lambda x: x.problem_id)
 			if i == 0:
 				for j in range(len(answers)):
 					p = Question.objects.get(id = answers[j].problem_id)
-					column.append(p.content)
+					column.append("第"+str(j)+"题")
 				# Print the title
 			row = []
 			row.append(str(i+1))
@@ -245,7 +247,7 @@ def get_total(request):
 			if submits[i].author != None:
 				row.append(submits[i].author)
 			else:
-				row.append('/')
+				row.append('匿名')
 			for j in range(len(answers)):
 				s = string_to_answer(answers[j].answer)
 				if len(s) == 0 or s[0] == "":
@@ -253,12 +255,9 @@ def get_total(request):
 				p = Question.objects.get(id = answers[j].problem_id)
 				option, quota = string_to_list(p.extra)
 				if answers[j].type == SINGLE_CHOICE:
-					if type == 0:
-						ans = chr(int(s[0]) + 65)
-					else:
-						ans = option[int(s[0])]
+					ans = chr(int(s[0]) + 65)
 				elif answers[j].type == MULTIPLE_CHOICE:
-					s = [option[int(x)] for x in s]
+					s = [chr(int(x) + 65) for x in s]
 					ans = ','.join(s)
 				else:
 					ans = s[0]
